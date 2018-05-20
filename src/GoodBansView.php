@@ -14,7 +14,12 @@ class GoodBansView
 		$this->patch = $bans['patch'];
 	}
 
-	public function render() {
+	/**
+	 * Renders the bans as HTML. Wrap in a Bootstrap container.
+	 *
+	 * @return string
+	 */
+	public function render() : string {
 		$text = '';
 		// patch number
 		$text .= '<div class="row justify-content-md-left align-items-center">

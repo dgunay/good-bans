@@ -1,6 +1,6 @@
 # GoodBans
 
-Basically a reimplementation of [http://bestbans.com]. That site has been out
+Basically a reimplementation of <http://bestbans.com>. That site has been out
 of maintenance for a super long time and I loved using it, so I got fed up and
 remade it.
 
@@ -11,7 +11,7 @@ remade it.
 2. Make sure you don't already have a table called "champions", it will overwrite
 that. Run 
 
-```
+```sh
 php refresh_db.php
 ```
 
@@ -27,10 +27,3 @@ to refresh the database.
 ```
 
 You can also just use the BanRanker model to make your own view.
-
-## Caveats
-
-Currently it uses Riot's API to get up-to-date champion id => name mappings. 
-Riot hasn't updated their static data dragon thing in a while so this is
-unfortunately necessary. You'll need an API key to get their static champions
-data.

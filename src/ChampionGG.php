@@ -12,7 +12,15 @@ class ChampionGG
 		$this->key = $api_key;
 	}
 
-	public function get_champions(string $elo = null) : array {
+	/**
+	 * Gets all champion data from the champion.gg API.
+	 * 
+	 * Data is aggregated for all elos if no argument is given.
+	 *
+	 * @param string $elo bronze, silver, gold, or platinum.
+	 * @return array
+	 */
+	public function getChampions(string $elo = null) : array {
 		$params = [
 			'limit'     => 1000, 
 			'champData' => 'elo,playRate,winRate', // all we care about
@@ -27,11 +35,18 @@ class ChampionGG
 
 		$this->champions = json_decode($response, true);
 
-		$this->patch = $this->get_patch();
+		$this->patch = $this->getPatch();
 		
 		return $this->champions;
 	}
 
+	/**
+	 * Makes a GET request to the champion.gg API.
+	 *
+	 * @param string $endpoint
+	 * @param array $args
+	 * @return string
+	 */
 	private function get(string $endpoint, array $args = []) : string {
 		$args['api_key'] = $this->key;
 		return file_get_contents(
@@ -39,9 +54,18 @@ class ChampionGG
 		);
 	}
 
-	public function get_patch() : string {
+	/**
+	 * Returns the most common patch number found among the champion data. 
+	 *
+	 * @return string
+	 */
+	public function getPatch() : string {
 		if ($this->patch) {
 			return $this->patch;
+		}
+
+		if ($this->champions === false) {
+			throw new \Exception('Champions not cached yet (call getChampions() first.');
 		}
 
 		$patches = [];
@@ -58,7 +82,7 @@ class ChampionGG
 
 	public function json() : string {
 		if ($this->champions === false) {
-			throw new \Exception('Champions not cached yet.');
+			throw new \Exception('Champions not cached yet (call getChampions() first.');
 		}
 
 		return json_encode($this->champions);

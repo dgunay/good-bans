@@ -2,23 +2,23 @@
 
 namespace GoodBans;
 
-// TODO: use an API to get win% pick% per-elo
 class BanRanker
 {
-	protected $key = '';
-
-	protected $champions = array();
-
 	protected $db;
 
-	public $patch;
-
-	public function __construct(\PDO $db = null) {
+	public function __construct(\PDO $db) {
 		$this->db = $db;
 		$this->db->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
 	}
 
-	public function best_bans(string $elo = null, $limit = 5) {
+	/**
+	 * Determines the N best bans for the current patch using the database.
+	 *
+	 * @param string $elo Bronze, Silver, Good, or Platinum. Case insensitive.
+	 * @param integer $limit How many bans to get.
+	 * @return array
+	 */
+	public function topBans(string $elo = null, $limit = 5) : array {
 		$elos = ['BRONZE','SILVER','GOLD','PLATINUM'];
 
 		// optionally filter by one elo

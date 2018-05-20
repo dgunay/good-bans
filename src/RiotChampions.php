@@ -2,14 +2,24 @@
 
 namespace GoodBans;
 
+/**
+ * Handles getting champion data and names from Riot's static DataDragon API.
+ */
 class RiotChampions
 {
+	/** @var array $champions */
 	protected $champions;
+
+	/** @var string $patch */
 	protected $patch;
 
-	// array of valid DataDragon versions
+	// JSON array of valid DataDragon versions
 	const VERSIONS_URL = 'https://ddragon.leagueoflegends.com/api/versions.json';
 
+	/**
+	 * @throws \DomainException DataDragon 
+	 * @param string $patch DataDragon version number.
+	 */
 	public function __construct(string $patch) {
 		$versions = \json_decode(\file_get_contents(self::VERSIONS_URL), true);
 
@@ -17,7 +27,9 @@ class RiotChampions
 			$patch = $versions[0];
 		}
 		elseif (!in_array($patch, $versions)) {
-			throw new \DomainException("$patch is not a valid DataDragon patch number");
+			throw new \DomainException(
+				"$patch is not a valid DataDragon version number (see " . self::VERSIONS_URL . ').'
+			);
 		}
 
 		$this->patch = $patch;
@@ -27,6 +39,11 @@ class RiotChampions
 		$this->champions = \json_decode($raw_champions, true)['data'];
 	}
 
+	/**
+	 * Returns a mapping of ['champion key' => 'name']
+	 *
+	 * @return array
+	 */
 	public function getChampNameMap() : array {
 		// Map champion ID to name
 		$champ_names = [];
@@ -37,6 +54,11 @@ class RiotChampions
 		return $champ_names;
 	}
 
+	/**
+	 * Returns a mapping of ['champion key' => 'icon URL'].
+	 *
+	 * @return array
+	 */
 	public function getImageUrls() : array {
 		$urls = [];
 		foreach ($this->champions as $champion) {

@@ -38,7 +38,7 @@ class ChampionsDatabaseRefresher
 		// get each elo's champ stats
 		foreach ($elos as $elo => $champs) {
 			echo "getting $elo champ stats..." . PHP_EOL;
-			$champions = $this->champion_gg->get_champions($elo);
+			$champions = $this->champion_gg->getChampions($elo);
 			$elos[$elo] = $this->aggregate_champs($champions);
 		}
 		
