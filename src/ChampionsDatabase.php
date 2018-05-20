@@ -6,7 +6,7 @@ use GoodBans\ChampionsGG;
 use GoodBans\RiotChampions;
 use GoodBans\Champion;
 
-class ChampionsDatabaseRefresher
+class ChampionsDatabase
 {
 	protected $db;
 	protected $champion_gg;

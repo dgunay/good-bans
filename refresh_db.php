@@ -11,9 +11,9 @@ require __DIR__ . '/../config.php';
 
 use GoodBans\ChampionGG;
 use GoodBans\RiotChampions;
-use GoodBans\ChampionsDatabaseRefresher;
+use GoodBans\ChampionsDatabase;
 
-$db = new ChampionsDatabaseRefresher(
+$db = new ChampionsDatabase(
 	new \PDO('sqlite:' . __DIR__ . '/champions.db'),
 	new ChampionGG($GLOBALS['champion.gg_key']),
 	new RiotChampions('latest')
