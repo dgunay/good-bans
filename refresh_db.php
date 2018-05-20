@@ -9,7 +9,6 @@
 require __DIR__ . '/vendor/autoload.php';
 require __DIR__ . '/../config.php';
 
-use GoodBans\BanRanker;
 use GoodBans\ChampionGG;
 use GoodBans\RiotChampions;
 use GoodBans\ChampionsDatabaseRefresher;
