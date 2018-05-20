@@ -5,6 +5,9 @@ namespace GoodBans;
 use GoodBans\ChampionsGG;
 use GoodBans\RiotChampions;
 use GoodBans\Champion;
+use GoodBans\Logger;
+use Psr\Log\LogLevel;
+
 
 class ChampionsDatabase
 {
@@ -15,13 +18,19 @@ class ChampionsDatabase
 	public function __construct(
 		\PDO $pdo, 
 		ChampionGG $champion_gg,
-		RiotChampions $riot_champions
+		RiotChampions $riot_champions,
+		Logger $logger = null
 	) {
 		$this->db = $pdo;
 		$this->db->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
 
 		$this->champion_gg = $champion_gg;
 		$this->riot_champions = $riot_champions;
+
+		if ($logger === null) {
+			// log to phpout by default
+			$this->logger = new Logger(fopen('php://output', 'w')); 
+		}
 	}
 
 	public function refresh() {
@@ -37,7 +46,7 @@ class ChampionsDatabase
 
 		// get each elo's champ stats
 		foreach ($elos as $elo => $champs) {
-			echo "getting $elo champ stats..." . PHP_EOL;
+			$this->logger->log(LogLevel::INFO, "getting $elo champ stats..." . PHP_EOL);
 			$champions = $this->champion_gg->getChampions($elo);
 			$elos[$elo] = $this->aggregate_champs($champions);
 		}
@@ -45,7 +54,7 @@ class ChampionsDatabase
 		// Map champion ID to name
 		$champ_names = $this->riot_champions->getChampNameMap();
 
-		echo 'Creating table if it does not exist...' . PHP_EOL;
+		$this->logger->log(LogLevel::INFO, 'Creating table if it does not exist...' . PHP_EOL);
 		$this->db->query(
 			"CREATE TABLE IF NOT EXISTS champions (
 				id TEXT, winRate REAL, playRate REAL, `name` TEXT, elo TEXT, 
@@ -54,12 +63,12 @@ class ChampionsDatabase
 		);
 
 		// flush champs in the database
-		echo 'Clearing database...' . PHP_EOL;
+		$this->logger->log(LogLevel::INFO, 'Clearing database...' . PHP_EOL);
 		$this->db->query("DELETE FROM champions");
 
 		$img_urls = $this->riot_champions->getImageUrls();
 		// spin up our DB and insert our champions, one row per elo
-		echo 'Populating database...' . PHP_EOL;
+		$this->logger->log(LogLevel::INFO, 'Populating database...' . PHP_EOL);
 		foreach ($elos as $elo => $champions) {
 			foreach ($champions as $champ_gg_raw_data) {
 				$champion = new Champion(
