@@ -4,7 +4,7 @@ namespace GoodBans;
 
 use GoodBans\RiotChampions;
 
-class GoodBansView
+class View
 {
 	protected $bans;
 	protected $patch;
