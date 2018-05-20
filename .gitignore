@@ -1,3 +1,6 @@
 /vendor/
 *.phar
 *.db
+
+# A folder I like to use for tiny experiments
+/dump/

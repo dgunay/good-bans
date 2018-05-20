@@ -48,7 +48,7 @@ class ChampionsDatabase
 		foreach ($elos as $elo => $champs) {
 			$this->logger->log(LogLevel::INFO, "getting $elo champ stats..." . PHP_EOL);
 			$champions = $this->champion_gg->getChampions($elo);
-			$elos[$elo] = $this->aggregate_champs($champions);
+			$elos[$elo] = $this->aggregateChamps($champions);
 		}
 		
 		// Map champion ID to name
@@ -107,7 +107,8 @@ class ChampionsDatabase
 	 * @param array $champion_gg_data
 	 * @return array
 	 */
-	private function aggregate_champs(array $champion_gg_data) : array {
+	private function aggregateChamps(array $champion_gg_data) : array {
+		// TODO: need to weight the average of each role by roleplaypercentage
 		$champions = [];
 		foreach ($champion_gg_data as $champion) {
 			if (is_array($champion['winRate'])) {

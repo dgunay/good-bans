@@ -1,14 +1,24 @@
 <?php declare(strict_types=1);
 
-namespace GoodBans;
+namespace GoodBans\Test\Mock;
 
-class ChampionGG
+use GoodBans\ChampionGG as RealChampionGG;
+
+/**
+ * A mock version of the ChampionGG class that just uses local files to
+ * simulate responses from the champion.gg API.
+ * 
+ * TODO: test for:
+ *  - no malformed args are being sent
+ *  - unexpected responses are dealt with gracefully
+ */
+class ChampionGG extends RealChampionGG
 {
 	protected $key;
 	protected $champions = false;
 	protected $patch = null;
-	
-	public function __construct(string $api_key) {
+
+	public function __construct(string $api_key = null) {
 		$this->key = $api_key;
 	}
 
@@ -31,7 +41,7 @@ class ChampionGG
 			$params['elo'] = strtoupper($elo);
 		}
 		
-		$response = $this->get("champions", $params);
+		$response = $this->get(__DIR__ . "/../data/ChampionGG/testGetChampions/{$elo}.json");
 
 		$this->champions = json_decode($response, true);
 		
@@ -39,19 +49,14 @@ class ChampionGG
 	}
 
 	/**
-	 * Makes a GET request to the champion.gg API.
+	 * Fakes a request to the champion.gg API by loading a local file.
 	 *
-	 * TODO: use Guzzle, this sucks
-	 * 
-	 * @param string $endpoint
+	 * @param string $uri
 	 * @param array $args
 	 * @return string
 	 */
-	protected function get(string $endpoint, array $args = []) : string {
-		$args['api_key'] = $this->key;
-		$response = @file_get_contents(
-			'http://api.champion.gg/v2/' . $endpoint . '?' . http_build_query($args)
-		);
+	protected function get(string $uri, array $args = []) : string {
+		$response = @file_get_contents($uri);
 
 		if ($response === false) {
 			throw new \RuntimeException(\error_get_last()['message']);
