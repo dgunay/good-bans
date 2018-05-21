@@ -7,7 +7,7 @@ class ChampionGG
 	protected $key;
 	protected $champions = false;
 	protected $patch = null;
-
+	
 	public function __construct(string $api_key) {
 		$this->key = $api_key;
 	}
@@ -34,8 +34,6 @@ class ChampionGG
 		$response = $this->get("champions", $params);
 
 		$this->champions = json_decode($response, true);
-
-		$this->patch = $this->getPatch();
 		
 		return $this->champions;
 	}
@@ -43,15 +41,23 @@ class ChampionGG
 	/**
 	 * Makes a GET request to the champion.gg API.
 	 *
+	 * TODO: use Guzzle, this sucks
+	 * 
 	 * @param string $endpoint
 	 * @param array $args
 	 * @return string
 	 */
-	private function get(string $endpoint, array $args = []) : string {
+	protected function get(string $endpoint, array $args = []) : string {
 		$args['api_key'] = $this->key;
-		return file_get_contents(
+		$response = @file_get_contents(
 			'http://api.champion.gg/v2/' . $endpoint . '?' . http_build_query($args)
 		);
+
+		if ($response === false) {
+			throw new \RuntimeException(\error_get_last()['message']);
+		}
+
+		return $response;
 	}
 
 	/**
