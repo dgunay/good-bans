@@ -4,6 +4,8 @@ namespace GoodBans;
 
 /**
  * Handles getting champion data and names from Riot's static DataDragon API.
+ * 
+ * TODO: use Guzzle or something, this sucks
  */
 class RiotChampions
 {
@@ -14,29 +16,45 @@ class RiotChampions
 	protected $patch;
 
 	// JSON array of valid DataDragon versions
-	const VERSIONS_URL = 'https://ddragon.leagueoflegends.com/api/versions.json';
+	const VERSIONS_URI = 'https://ddragon.leagueoflegends.com/api/versions.json';
 
 	/**
 	 * @throws \DomainException DataDragon 
 	 * @param string $patch DataDragon version number.
 	 */
 	public function __construct(string $patch) {
-		$versions = \json_decode(\file_get_contents(self::VERSIONS_URL), true);
+		$versions = \json_decode(\file_get_contents(self::VERSIONS_URI), true);
 
+		// filter out 'lolpatch_*' since they all 403.
+		$versions = array_filter($versions, function($vsn) {
+			return strpos($vsn, 'lolpatch') === false;
+		});
+		
 		if ($patch = 'latest') {
 			$patch = $versions[0];
 		}
 		elseif (!in_array($patch, $versions)) {
+			// TODO: why doesn't 'version_that_doesnt_exist' make this throw?
 			throw new \DomainException(
-				"$patch is not a valid DataDragon version number (see " . self::VERSIONS_URL . ').'
+				"$patch is not a valid DataDragon version number (see " . self::VERSIONS_URI . ').'
 			);
 		}
 
 		$this->patch = $patch;
-		$raw_champions = \file_get_contents(
+		$raw_champions = $this->getChampions($patch);
+		$this->champions = \json_decode($raw_champions, true)['data'];
+	}
+
+	protected function getChampions(string $patch) {
+		$response = @file_get_contents(
 			"http://ddragon.leagueoflegends.com/cdn/{$patch}/data/en_US/champion.json"
 		);
-		$this->champions = \json_decode($raw_champions, true)['data'];
+
+		if ($response === false) {
+			throw new \RuntimeException(\error_get_last()['message']);
+		}
+
+		return $response;
 	}
 
 	/**

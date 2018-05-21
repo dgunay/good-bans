@@ -4,6 +4,7 @@ namespace GoodBans\Test;
 
 use GoodBans\ChampionsDatabase;
 use GoodBans\Test\Mock\ChampionGG;
+use GoodBans\Test\Mock\RiotChampions;
 use PHPUnit\Framework\TestCase;
 
 final class ChampionsDatabaseTest // extends TestCase
@@ -11,11 +12,11 @@ final class ChampionsDatabaseTest // extends TestCase
 	protected $db;
 
 	protected function setUp() {
-		// $this->db = new ChampionsDatabase(
-		// 	new \PDO('sqlite::memory:'),
-		// 	new ChampionGG(),
-			
-		// );
+		$this->db = new ChampionsDatabase(
+			new \PDO('sqlite::memory:'),
+			new ChampionGG(),
+			new RiotChampions()
+		);
 		$this->db->load_csv(__DIR__ . '/datasets/simple.csv');
 	}
 	protected function tearDown() {
