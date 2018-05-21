@@ -12,8 +12,8 @@ class RiotChampions
 	/** @var string $versions */
 	protected $versions;
 
-	/** @var string $cache_version */
-	protected $cache_version;
+	/** @var string $cached_version */
+	protected $cached_version;
 
 	/** @var array $cached_champs */
 	protected $cached_champs;
@@ -56,7 +56,7 @@ class RiotChampions
 		}
 
 		$this->cached_champs = \json_decode($response, true)['data'];
-		$this->cache_version = $version;
+		$this->cached_version = $version;
 		return $this->cached_champs;
 	}
 
@@ -73,7 +73,7 @@ class RiotChampions
 		
 		// Map champion ID to name
 		$champ_names = [];
-		foreach ($this->cached_champions as $champ) {
+		foreach ($this->cached_champs as $champ) {
 			$champ_names[$champ['key']] = $champ['name'];
 		}
 		
@@ -87,8 +87,8 @@ class RiotChampions
 	 */
 	public function getImageUrls() : array {
 		$urls = [];
-		foreach ($this->champions as $champion) {
-			$urls[$champion['key']] = "http://ddragon.leagueoflegends.com/cdn/{$this->patch}/img/champion/{$champion['image']['full']}";
+		foreach ($this->cached_champs as $champion) {
+			$urls[$champion['key']] = "http://ddragon.leagueoflegends.com/cdn/{$this->cached_version}/img/champion/{$champion['image']['full']}";
 		}
 
 		return $urls;

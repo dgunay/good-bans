@@ -7,7 +7,6 @@
  */
 
 require __DIR__ . '/vendor/autoload.php';
-require __DIR__ . '/../config.php';
 
 use GoodBans\ChampionGG;
 use GoodBans\RiotChampions;
@@ -15,7 +14,7 @@ use GoodBans\ChampionsDatabase;
 
 $db = new ChampionsDatabase(
 	new \PDO('sqlite:' . __DIR__ . '/champions.db'),
-	new ChampionGG($GLOBALS['champion.gg_key']),
+	new ChampionGG($argv[1]),
 	new RiotChampions('latest')
 );
 

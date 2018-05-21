@@ -8,6 +8,7 @@ class Champion
 	private $winRate;
 	private $playRate;
 	private $banRate;
+	private $percentRolePlayed;
 	private $elo;
 	private $patch;
 	private $name;
@@ -21,6 +22,7 @@ class Champion
 		$this->winRate  = (float) $champion_gg['winRate'];
 		$this->playRate = (float) $champion_gg['playRate'];
 		$this->banRate  = (float) $champion_gg['banRate'];
+		$this->percentRolePlayed = (float) $champion_gg['percentRolePlayed'];
 		$this->elo      = $champion_gg['elo'];
 		$this->patch    = $champion_gg['patch'];
 		$this->name     = $name;
@@ -32,6 +34,10 @@ class Champion
 
 	public function getWinRate() : float {
 		return $this->winRate;
+	}
+
+	public function getPercentRolePlayed() : float {
+		return $this->percentRolePlayed;
 	}
 
 	public function getPlayRate() : float {
@@ -78,4 +84,7 @@ class Champion
 		return (100 * $this->playRate) / (100 - $this->banRate);
 	}
 
+	public function weighted($value) {
+		return $value * $this->percentRolePlayed;
+	}
 }

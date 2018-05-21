@@ -39,20 +39,23 @@ class ChampionsDatabase
 			'silver'     => [],
 			'gold'       => [],
 			'platinum'   => [],
-			'diamond'    => [],
-			'master'     => [],
-			'challenger' => [],
+			// 'diamond'    => [],
+			// 'master'     => [],
+			// 'challenger' => [],
 		];
+
+		// $patch = null;
 
 		// get each elo's champ stats
 		foreach ($elos as $elo => $champs) {
 			$this->logger->log(LogLevel::INFO, "getting $elo champ stats..." . PHP_EOL);
 			$champions = $this->champion_gg->getChampions($elo);
+			// $patch ?? $patch = $this->getPatch($champions);
 			$elos[$elo] = $this->aggregateChamps($champions);
 		}
 		
 		// Map champion ID to name
-		$champ_names = $this->riot_champions->getChampNameMap();
+		$champ_names = $this->riot_champions->getChampNameMap('latest');
 
 		$this->logger->log(LogLevel::INFO, 'Creating table if it does not exist...' . PHP_EOL);
 		$this->db->query(
@@ -99,6 +102,18 @@ class ChampionsDatabase
 		}
 	}
 
+	protected function getPatch(array $champions) {
+		$patches = [];
+		foreach ($champions as $champion) {
+			$patches[] = $champion['patch'];
+		}
+
+		// most common patches
+		$values = array_count_values($patches);
+		arsort($values);
+		return array_keys($values)[0];
+	}
+
 	/**
 	 * Aggregates champion data for all roles. For example, a champion played in
 	 * mid and top will have their mid and top winrate and banrate averaged, and
@@ -109,18 +124,21 @@ class ChampionsDatabase
 	 */
 	private function aggregateChamps(array $champion_gg_data) : array {
 		// TODO: need to weight the average of each role by roleplaypercentage
+		// TOdO: how can I use the Champion() class here?
 		$champions = [];
 		foreach ($champion_gg_data as $champion) {
 			if (is_array($champion['winRate'])) {
 				// aggregate champion data as arrays
-				$champion['winRate'][]  = [$champion['winRate']];
-				$champion['banRate'][]  = [$champion['banRate']];				
+				// $champion['winRate'][]  = $champion['winRate'] * $champion['percentRolePlayed'];
+				$champion['winRate'][]  = $champion['winRate'];
+				$champion['banRate'][]  = $champion['banRate'];				
 				$champion['playRate']   += $champion['playRate'];
 			}
 			else {
 				// if this champ is new, reinitialize it as an array
-				$champion['winRate']  = array($champion['winRate']);
-				$champion['banRate']  = array($champion['banRate']);
+				// $champion['winRate']  = [$champion['winRate'] * $champion['percentRolePlayed']];
+				$champion['winRate']  = [$champion['winRate']];
+				$champion['banRate']  = [$champion['banRate']];
 				$champion['playRate'] = $champion['playRate'];
 			}
 
