@@ -9,52 +9,55 @@ namespace GoodBans;
  */
 class RiotChampions
 {
-	/** @var array $champions */
-	protected $champions;
+	/** @var string $versions */
+	protected $versions;
 
-	/** @var string $patch */
-	protected $patch;
+	/** @var string $cache_version */
+	protected $cache_version;
 
-	// JSON array of valid DataDragon versions
+	/** @var array $cached_champs */
+	protected $cached_champs;
+
+	// Points to a JSON array of valid DataDragon versions
 	const VERSIONS_URI = 'https://ddragon.leagueoflegends.com/api/versions.json';
+
+	// Used to sprintf in the version when retrieving the file
+	const FILE_URI_PATTERN = 'http://ddragon.leagueoflegends.com/cdn/%s/data/en_US/champion.json';
 
 	/**
 	 * @throws \DomainException DataDragon 
 	 * @param string $patch DataDragon version number.
 	 */
-	public function __construct(string $patch) {
+	public function __construct() {
 		$versions = \json_decode(\file_get_contents(self::VERSIONS_URI), true);
 
 		// filter out 'lolpatch_*' since they all 403.
 		$versions = array_filter($versions, function($vsn) {
-			return strpos($vsn, 'lolpatch') === false;
+			return (strpos($vsn, 'lolpatch') === false);
 		});
-		
-		if ($patch = 'latest') {
-			$patch = $versions[0];
+
+		$this->versions = $versions;	
+	}
+
+	public function getChampions(string $version) {
+		if ($version === 'latest') {
+			$version = $this->versions[0];
 		}
-		elseif (!in_array($patch, $versions)) {
-			// TODO: why doesn't 'version_that_doesnt_exist' make this throw?
+		elseif (!in_array($version, $this->versions)) {
 			throw new \DomainException(
-				"$patch is not a valid DataDragon version number (see " . self::VERSIONS_URI . ').'
+				"$version is not a valid DataDragon version number (see " . self::VERSIONS_URI . ').'
 			);
 		}
 
-		$this->patch = $patch;
-		$raw_champions = $this->getChampions($patch);
-		$this->champions = \json_decode($raw_champions, true)['data'];
-	}
-
-	protected function getChampions(string $patch) {
-		$response = @file_get_contents(
-			"http://ddragon.leagueoflegends.com/cdn/{$patch}/data/en_US/champion.json"
-		);
+		$response = @file_get_contents(sprintf(self::FILE_URI_PATTERN, $version));
 
 		if ($response === false) {
 			throw new \RuntimeException(\error_get_last()['message']);
 		}
 
-		return $response;
+		$this->cached_champs = \json_decode($response, true)['data'];
+		$this->cache_version = $version;
+		return $this->cached_champs;
 	}
 
 	/**
@@ -62,10 +65,15 @@ class RiotChampions
 	 *
 	 * @return array
 	 */
-	public function getChampNameMap() : array {
+	public function getChampNameMap(string $version) : array {
+		// refresh if the version isn't the same as the cached version
+		if ($version !== $this->cached_version) {
+			$this->getChampions($version);
+		}
+		
 		// Map champion ID to name
 		$champ_names = [];
-		foreach ($this->champions as $champ) {
+		foreach ($this->cached_champions as $champ) {
 			$champ_names[$champ['key']] = $champ['name'];
 		}
 		

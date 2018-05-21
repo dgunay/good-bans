@@ -18,6 +18,9 @@ class RiotChampions extends RealRiotChampions
 	// // JSON array of valid DataDragon versions
 	const VERSIONS_URI = __DIR__ . '/../data/RiotChampions/versions.json';
 
+	// URI for the fixtures, used in sprintf()
+	const FILE_URI_PATTERN = __DIR__ . "/../data/RiotChampions/champion/%s.json";
+	
 	/**
 	 * @throws \DomainException DataDragon 
 	 * @param string $patch DataDragon version number.
@@ -39,17 +42,17 @@ class RiotChampions extends RealRiotChampions
 	// 	$this->champions = \json_decode($raw_champions, true)['data'];
 	// }
 
-	protected function getChampions(string $patch) {
-		$response = @file_get_contents(
-			__DIR__ . "/../data/RiotChampions/champion/{$patch}.json"
-		);
+	// protected function getChampions(string $patch) {
+	// 	$response = @file_get_contents(
+	// 		__DIR__ . "/../data/RiotChampions/champion/{$patch}.json"
+	// 	);
 
-		if ($response === false) {
-			throw new \RuntimeException(\error_get_last()['message']);
-		}
+	// 	if ($response === false) {
+	// 		throw new \RuntimeException(\error_get_last()['message']);
+	// 	}
 
-		return $response;
-	}
+	// 	return $response;
+	// }
 
 	/**
 	 * Returns a mapping of ['champion key' => 'name']
