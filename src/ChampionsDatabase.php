@@ -126,13 +126,16 @@ class ChampionsDatabase
 		// TODO: need to weight the average of each role by roleplaypercentage
 		// TOdO: how can I use the Champion() class here?
 		$champions = [];
+		print_r($champion_gg_data); exit;
+		// TODO: debug this until it's ironclad
 		foreach ($champion_gg_data as $champion) {
 			if (is_array($champion['winRate'])) {
+				echo 'DUPE CHAMP' . PHP_EOL;
 				// aggregate champion data as arrays
 				// $champion['winRate'][]  = $champion['winRate'] * $champion['percentRolePlayed'];
 				$champion['winRate'][]  = $champion['winRate'];
 				$champion['banRate'][]  = $champion['banRate'];				
-				$champion['playRate']   += $champion['playRate'];
+				$champion['playRate']  += $champion['playRate'];
 			}
 			else {
 				// if this champ is new, reinitialize it as an array
@@ -147,6 +150,9 @@ class ChampionsDatabase
 
 		foreach ($champions as $id => $champion) {
 			// average wr and banrate
+			if (count($champion['winRate']) > 1) {
+				print_r($champion); exit;
+			}
 			$champion['winRate'] = array_sum($champion['winRate']) / count($champion['winRate']);
 			$champion['banRate'] = array_sum($champion['banRate']) / count($champion['banRate']);
 

@@ -28,7 +28,7 @@ final class ChampionGGTest extends TestCase
 				$result,
 				json_decode(
 					file_get_contents(
-						__DIR__ . "/data/ChampionGG/testGetChampions/{$case}.json"
+						__DIR__ . "/data/ChampionGG/champions/{$case}.json"
 					),
 					true
 				)
@@ -70,7 +70,7 @@ final class ChampionGGTest extends TestCase
 			$this->gg->getChampions($elo);
 			$this->assertSame(
 				$this->gg->json(),
-				\file_get_contents(__DIR__ . "/data/ChampionGG/testGetChampions/{$elo}.json")	
+				\file_get_contents(__DIR__ . "/data/ChampionGG/champions/{$elo}.json")	
 			);
 		}
 	}

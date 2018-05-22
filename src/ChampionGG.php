@@ -41,7 +41,7 @@ class ChampionGG
 	/**
 	 * Makes a GET request to the champion.gg API.
 	 *
-	 * TODO: use Guzzle, this sucks
+	 *  TODO: use Guzzle, this sucks
 	 * 
 	 * @param string $endpoint
 	 * @param array $args
