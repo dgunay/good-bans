@@ -50,8 +50,7 @@ class ChampionsDatabase
 		foreach ($elos as $elo => $champs) {
 			$this->logger->log(LogLevel::INFO, "getting $elo champ stats..." . PHP_EOL);
 			$champions = $this->champion_gg->getChampions($elo);
-			// $patch ?? $patch = $this->getPatch($champions);
-			$elos[$elo] = $this->aggregateChamps($champions);
+			$elos[$elo] = $champions = $this->champion_gg->aggregateRoles();
 		}
 		
 		// Map champion ID to name
@@ -61,7 +60,8 @@ class ChampionsDatabase
 		$this->db->query(
 			"CREATE TABLE IF NOT EXISTS champions (
 				id TEXT, winRate REAL, playRate REAL, `name` TEXT, elo TEXT, 
-				banValue REAL, adjustedPickRate REAL, `patch` TEXT, img TEXT
+				banValue REAL, banRate REAL, adjustedPickRate REAL, `patch` TEXT, 
+				img TEXT
 			)"
 		);
 
@@ -81,10 +81,10 @@ class ChampionsDatabase
 
 				// Bind our values for protection against SQL injection
 				$statement = $this->db->prepare("INSERT INTO champions (
-					id, winRate, playRate, name, elo, banValue, adjustedPickRate, patch, img
+					id, winRate, playRate, name, elo, banValue, banRate, adjustedPickRate, patch, img
 				)
 				VALUES (
-					:id, :winRate, :playRate, :name, :elo, :banValue, :adjustedPickRate, :patch, :img
+					:id, :winRate, :playRate, :name, :elo, :banValue, :banRate,:adjustedPickRate, :patch, :img
 				)");
 
 				$statement->execute([
@@ -94,6 +94,7 @@ class ChampionsDatabase
 					':name'             => $champion->getName(),
 					':elo'              => $champion->getElo(),
 					':adjustedPickRate' => $champion->adjustedPickRate(),
+					':banRate'          => $champion->getBanRate(),
 					':banValue'         => $champion->banValue(),
 					':patch'            => $champion->getPatch(),
 					':img'              => $img_urls[$champion->getId()],

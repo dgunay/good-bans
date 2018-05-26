@@ -81,10 +81,14 @@ class Champion
 		}
 
 		// TODO: should it be 1.0 or 100?
-		return (100 * $this->playRate) / (100 - $this->banRate);
+		return (1.0 * $this->playRate) / (1.0 - $this->banRate);
 	}
 
 	public function weighted($value) {
 		return $value * $this->percentRolePlayed;
+	}
+
+	public function getBanRate() : float {
+		return $this->banRate;
 	}
 }

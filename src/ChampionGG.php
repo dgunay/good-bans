@@ -38,6 +38,40 @@ class ChampionGG
 		return $this->champions;
 	}
 
+	public function aggregateRoles() {
+		// TODO: need to weight the average of each role by roleplaypercentage
+		$aggregate_champions = [];
+		// TODO: debug this until it's ironclad
+		foreach ($this->champions as $champion) {
+			$id = $champion['championId'];
+			if (array_key_exists($id, $aggregate_champions)) {
+				// aggregate champion data as arrays
+				$aggregate_champions[$id]['winRate'][]  = $champion['winRate'] * $champion['percentRolePlayed'];
+				// $aggregate_champions[$id]['winRate'][]  = $champion['winRate'];
+				$aggregate_champions[$id]['banRate'][]  = $champion['banRate'];				
+				$aggregate_champions[$id]['playRate']  += $champion['playRate'];
+			}
+			else {
+				// if this champ is new, reinitialize averaged fields as array
+				$aggregate_champions[$id] = $champion;
+				$aggregate_champions[$id]['winRate']  = [$champion['winRate'] * $champion['percentRolePlayed']];
+				// $champion[$id]['winRate']  = [$champion['winRate']];
+				$aggregate_champions[$id]['banRate']  = [$champion['banRate']];
+				$aggregate_champions[$id]['playRate'] = $champion['playRate'];
+			}
+		}
+
+		foreach ($aggregate_champions as $id => $champion) {
+			// average wr and banrate
+			$champion['winRate'] = array_sum($champion['winRate']) / count($champion['winRate']);
+			$champion['banRate'] = array_sum($champion['banRate']) / count($champion['banRate']);
+
+			$champions[$id] = $champion;
+		}
+
+		return $champions;
+	}
+
 	/**
 	 * Makes a GET request to the champion.gg API.
 	 *
