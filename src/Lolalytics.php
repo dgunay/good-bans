@@ -5,7 +5,6 @@ namespace GoodBans;
 // TODO:
 // use https://lolalytics.com/ranked/worldwide/current/platinum/plus/champions/
 // current = current patch
-
 class Lolalytics
 {
   const URI_FORMAT = 'https://lolalytics.com/ranked/worldwide/current/%s/plus/champions/';
