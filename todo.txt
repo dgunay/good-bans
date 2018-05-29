@@ -6,3 +6,6 @@ tests
 version 1.0 should have:
 - complete test coverage
 - optional caching of champ images
+
+other nice features:
+- make an interface to normalize different data sources so they can be aggregated
