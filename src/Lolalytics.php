@@ -7,7 +7,7 @@ use GuzzleHttp\Client;
 // TODO:
 // use https://lolalytics.com/ranked/worldwide/current/platinum/plus/champions/
 // current = current patch
-class Lolalytics
+class Lolalytics extends ApiClient
 {
   // Array of places to get data for each elo (last 7 days)
   const ELO_URIS = [
@@ -28,20 +28,75 @@ class Lolalytics
     $this->client = $client;
   }
 
-  public function scrape(array $elos = []) : array {
+  protected function refreshChampions() : array {
+    $this->scrape();
+    return $this->champions;
+  }
+
+  protected function scrape(array $elos = []) : array {
     if (empty($elo)) {
       $elo = ['bronze', 'silver', 'gold', 'platinum', 'diamond'];
     }
 
-    foreach ($elos as $elo) {
-      // TODO: use guzzle to get the thing
-      throw new \Exception('not implemented');
+    $champions = [];
 
-      $this->parseDom($response);
+    foreach ($elos as $elo) {
+      $html = $this->get(self::ELO_URIS[$elo]);
+      $champions[$elo] = $this->parseDom($html);
     }
+
+    $this->champions = $champions;
   }
 
   private function parseDom(string $html) : array {
-    // TODO: parse the dom
+    $dom = new \DOMDocument();
+    @$dom->loadHTML($html);
+    $xpath = new \DOMXPath($dom);
+
+    $champions = [];
+
+    $rows = $xpath->query("//table[@id='championlist']//tr[td]");
+    foreach ($rows as $row) {
+      // TODO: the Champion object is too coupled to ChampionGG api to use here
+      // Remake this with the Champion object later
+      $champion = array(
+        'id'       => null,
+        'name'     => null,
+        'winRate'  => null,
+        'playRate' => null,
+        'banRate'  => null,
+      );
+    
+      // TODO: can we retrieve the mapping from somewhere else?
+      $nodelist = $xpath->query("td[2]/div[@class='All']", $row);
+      if ($nodelist->length > 0) {
+        $champion['id'] = $nodelist->item(0)->nodeValue;
+      }
+      
+      $nodelist = $xpath->query("td[2]/div[@class='All']", $row);
+      if ($nodelist->length > 0) {
+        $champion['name'] = $nodelist->item(0)->nodeValue;
+      }
+      
+      $nodelist = $xpath->query("td[5]/div[@class='All']", $row);
+      if ($nodelist->length > 0) {
+        $champion['winRate'] = $nodelist->item(0)->nodeValue;
+      }
+      
+      $nodelist = $xpath->query("td[6]/div[@class='All']", $row);
+      if ($nodelist->length > 0) {
+        $champion['playRate'] = $nodelist->item(0)->nodeValue;
+      }
+      
+      $nodelist = $xpath->query("td[7]/div[@class='All']", $row);
+      if ($nodelist->length > 0) {
+        $champion['banRate'] = $nodelist->item(0)->nodeValue;
+      }
+
+      $champions[$champion['id']] = $champion;
+    }
+
+    return $champions;
   }
+
 }

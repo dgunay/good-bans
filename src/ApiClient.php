@@ -13,6 +13,8 @@ abstract class ApiClient
   /** @var GuzzleHttp\Client */
   protected $client;
 
+  protected $champions = null;
+
   public function __construct(array $credentials, Client $client) {
     $this->credentials = $credentials;
     $this->client      = $client;
@@ -21,5 +23,16 @@ abstract class ApiClient
   public function get(string $endpoint, array $args = []) {
     $response = $this->client->request('GET', $endpoint, ['query' => $args]);
     return $response->getBody();
+  }
+
+  // Call whatever functions necessary to get a fresh batch of champs.
+  abstract protected function refreshChampions() : array;
+
+  public function getChampions() : array {
+    if ($this->champions)  {
+      return $this->champions;
+    }
+
+    return $this->refreshChampions();
   }
 }
