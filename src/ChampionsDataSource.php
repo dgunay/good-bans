@@ -12,9 +12,9 @@ use GoodBans\ApiClient;
 abstract class ChampionsDataSource
 {
   /** @var array */
-  protected $champions = null;
+  protected $champions = [];
 
-  /** @var GoodBans\ApiClient */
+  /** @var ApiClient */
   protected $client;
 
   public function __construct(ApiClient $client) {

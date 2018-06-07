@@ -6,7 +6,10 @@ use GoodBans\RiotChampions;
 
 class View
 {
+	/** @var array */
 	protected $bans;
+
+	/** @var string */
 	protected $patch;
 
 	public function __construct(array $bans) {

@@ -9,14 +9,15 @@ namespace GoodBans;
  */
 class RiotChampions
 {
-	/** @var string $versions */
-	protected $versions;
+	/** @var array $versions */
+	protected $versions = [];
 
 	/** @var string $cached_version */
-	protected $cached_version;
+	protected $cached_version = '';
 
+	// TODO: add checks for cache state
 	/** @var array $cached_champs */
-	protected $cached_champs;
+	protected $cached_champs = [];
 
 	// Points to a JSON array of valid DataDragon versions
 	const VERSIONS_URI = 'https://ddragon.leagueoflegends.com/api/versions.json';
@@ -32,14 +33,14 @@ class RiotChampions
 		$versions = \json_decode(\file_get_contents(self::VERSIONS_URI), true);
 
 		// filter out 'lolpatch_*' since they all 403.
-		$versions = array_filter($versions, function($vsn) {
+		$versions = array_filter($versions, function(string $vsn) : bool {
 			return (strpos($vsn, 'lolpatch') === false);
 		});
 
 		$this->versions = $versions;	
 	}
 
-	public function getChampions(string $version) {
+	public function getChampions(string $version) : array {
 		if ($version === 'latest') {
 			$version = $this->versions[0];
 		}
@@ -65,7 +66,7 @@ class RiotChampions
 	 *
 	 * @return array
 	 */
-	public function getChampNameMap(string $version) : array {
+	public function getChampNameMap(string $version = '') : array {
 		// refresh if the version isn't the same as the cached version
 		if ($version !== $this->cached_version) {
 			$this->getChampions($version);

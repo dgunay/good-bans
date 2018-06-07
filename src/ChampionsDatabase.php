@@ -17,8 +17,11 @@ class ChampionsDatabase
 	// TODO: change to ChamionsDataSource
 	protected $champion_gg;
 
-	/** @var Goodbans\RiotChampions */
+	/** @var RiotChampions */
 	protected $riot_champions;
+
+	/** @var Logger */
+	protected $logger;
 
 	public function __construct(
 		\PDO $pdo, 
@@ -35,6 +38,9 @@ class ChampionsDatabase
 		if ($logger === null) {
 			// log to phpout by default
 			$this->logger = new Logger(fopen('php://output', 'w')); 
+		}
+		else {
+			$this->logger = $logger;
 		}
 	}
 
@@ -110,7 +116,7 @@ class ChampionsDatabase
 		}
 	}
 
-	protected function getPatch(array $champions) {
+	protected function getPatch(array $champions) : string {
 		$patches = [];
 		foreach ($champions as $champion) {
 			$patches[] = $champion['patch'];

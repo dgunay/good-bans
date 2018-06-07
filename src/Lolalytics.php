@@ -15,14 +15,13 @@ class Lolalytics extends ChampionsDataSource
     'diamond'  => 'https://lolalytics.com/ranked/worldwide/diamond/plus/champions/',
   ];
 
-  protected function refreshChampions() : array {
-    $this->scrape();
-    return $this->champions;
+  protected function refreshChampions(array $elos = []) : array {
+    return $this->scrape($elos);
   }
 
   protected function scrape(array $elos = []) : array {
-    if (empty($elo)) {
-      $elo = ['bronze', 'silver', 'gold', 'platinum', 'diamond'];
+    if (empty($elos)) {
+      $elos = ['bronze', 'silver', 'gold', 'platinum', 'diamond'];
     }
 
     $champions = [];
@@ -33,7 +32,7 @@ class Lolalytics extends ChampionsDataSource
     }
 
     $this->champions = $champions;
-    return $champion;
+    return $champions;
   }
 
   private function parseDom(string $html) : array {
