@@ -11,8 +11,13 @@ use Psr\Log\LogLevel;
 
 class ChampionsDatabase
 {
+	/** @var \PDO */
 	protected $db;
+
+	// TODO: change to ChamionsDataSource
 	protected $champion_gg;
+
+	/** @var Goodbans\RiotChampions */
 	protected $riot_champions;
 
 	public function __construct(
@@ -73,6 +78,8 @@ class ChampionsDatabase
 		// spin up our DB and insert our champions, one row per elo
 		$this->logger->log(LogLevel::INFO, 'Populating database...' . PHP_EOL);
 		foreach ($elos as $elo => $champions) {
+
+			// TODO: needs refactor after ChampionsDataSource
 			foreach ($champions as $champ_gg_raw_data) {
 				$champion = new Champion(
 					$champ_gg_raw_data, 

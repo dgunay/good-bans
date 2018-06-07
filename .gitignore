@@ -4,3 +4,6 @@
 
 # A folder I like to use for tiny experiments
 /dump/
+
+# Psalm configuration
+psalm.xml

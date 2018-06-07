@@ -20,7 +20,7 @@ abstract class ChampionsDataSource
   public function __construct(ApiClient $client) {
     $this->client = $client;
   }
-  
+
   /**
    * Get champions with their data at a given elo, or all of them separated 
    * by elo if none specified.
@@ -34,10 +34,11 @@ abstract class ChampionsDataSource
    * Where possible, use data that is segregated ONLY by elo, not by role.
    * 
    * @param array $elos
+   * @param bool $refresh Force a retrieval of fresh data (don't use cache)
    * @return array should be ['bronze' => [...], 'silver' => [...], ...]
    */
-  public function getChampions(array $elos = []) : array {
-    if ($this->champions) {
+  public function getChampions(array $elos = [], bool $refresh = false) : array {
+    if ($this->champions && !$refresh) {
       return array_intersect_key($this->champions, array_flip($elos));
     }
 
