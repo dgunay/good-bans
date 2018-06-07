@@ -38,7 +38,7 @@ class ChampionGG
 		return $this->champions;
 	}
 
-	public function aggregateRoles() {
+	public function aggregateRoles() : array {
 		// TODO: need to weight the average of each role by roleplaypercentage
 		$aggregate_champions = [];
 		// TODO: debug this until it's ironclad
