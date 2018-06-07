@@ -16,6 +16,4 @@ class Lolalytics
   public function scrape() {
     // TODO: scrape it 
   }
-
-
 }

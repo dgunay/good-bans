@@ -2,15 +2,25 @@
 
 namespace GoodBans;
 
+use GoodBans\ApiClient;
+
 /**
  * Specifies what functionality a data source (i.e. Champion.gg, op.gg, etc)
- * should expose to the user of the class, to allow for aggregation.
+ * should expose to the user of the class, to allow for aggregation across
+ * different data providers.
  */
-abstract class ChampionsData
+abstract class ChampionsDataSource
 {
   /** @var array */
   protected $champions = null;
 
+  /** @var GoodBans\ApiClient */
+  protected $client;
+
+  public function __construct(ApiClient $client) {
+    $this->client = $client;
+  }
+  
   /**
    * Get champions with their data at a given elo, or all of them separated 
    * by elo if none specified.
