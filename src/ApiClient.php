@@ -5,7 +5,7 @@ namespace GoodBans;
 use GuzzleHttp\Client;
 
 /** Handles requests to any external API or data source */
-abstract class ApiClient
+class ApiClient
 {
   /** @var array */
   protected $credentials;
@@ -15,8 +15,8 @@ abstract class ApiClient
   /** @var GuzzleHttp\Client */
   protected $client;
 
-  public function __construct(Client $client) {
-    $this->client = $client;
+  public function __construct(Client $client = null) {
+    $this->client = $client ?? new Client();
   }
 
   public function setCredentials(array $credentials) {
@@ -29,6 +29,7 @@ abstract class ApiClient
 
   public function get(string $endpoint, array $args = []) : string {
     $response = $this->client->request('GET', $endpoint, ['query' => $args]);
-    return $response->getBody();
+    $body = $response->getBody();
+    return (string) $body; // must cast to string for testing
   }
 }

@@ -17,8 +17,8 @@ abstract class ChampionsDataSource
   /** @var ApiClient */
   protected $client;
 
-  public function __construct(ApiClient $client) {
-    $this->client = $client;
+  public function __construct(ApiClient $client = null) {
+    $this->client = $client ?? new ApiClient();
   }
 
   /**
@@ -38,6 +38,7 @@ abstract class ChampionsDataSource
    * @return array should be ['bronze' => [...], 'silver' => [...], ...]
    */
   public function getChampions(array $elos = [], bool $refresh = false) : array {
+    // TODO: the filtering might need to be standardized on refreshChampions()
     if ($this->champions && !$refresh) {
       return array_intersect_key($this->champions, array_flip($elos));
     }

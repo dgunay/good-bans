@@ -2,7 +2,7 @@
 
 namespace GoodBans;
 
-use GoodBans\ChampionsGG;
+use GoodBans\ChampionsDataSource;
 use GoodBans\RiotChampions;
 use GoodBans\Champion;
 use GoodBans\Logger;
@@ -14,8 +14,8 @@ class ChampionsDatabase
 	/** @var \PDO */
 	protected $db;
 
-	// TODO: change to ChamionsDataSource
-	protected $champion_gg;
+	/** @var ChampionsDataSource */
+	protected $champion_data;
 
 	/** @var RiotChampions */
 	protected $riot_champions;
@@ -25,7 +25,7 @@ class ChampionsDatabase
 
 	public function __construct(
 		\PDO $pdo, 
-		ChampionGG $champion_gg,
+		ChampionsDataSource $champion_gg,
 		RiotChampions $riot_champions,
 		Logger $logger = null
 	) {
@@ -144,7 +144,6 @@ class ChampionsDatabase
 		// TODO: debug this until it's ironclad
 		foreach ($champion_gg_data as $champion) {
 			if (is_array($champion['winRate'])) {
-				echo 'DUPE CHAMP' . PHP_EOL;
 				// aggregate champion data as arrays
 				// $champion['winRate'][]  = $champion['winRate'] * $champion['percentRolePlayed'];
 				$champion['winRate'][]  = $champion['winRate'];
@@ -164,9 +163,6 @@ class ChampionsDatabase
 
 		foreach ($champions as $id => $champion) {
 			// average wr and banrate
-			if (count($champion['winRate']) > 1) {
-				print_r($champion); exit;
-			}
 			$champion['winRate'] = array_sum($champion['winRate']) / count($champion['winRate']);
 			$champion['banRate'] = array_sum($champion['banRate']) / count($champion['banRate']);
 
@@ -174,9 +170,5 @@ class ChampionsDatabase
 		}
 
 		return $champions;
-	}
-
-	public function pdo() : \PDO {
-		return $this->db;
 	}
 }

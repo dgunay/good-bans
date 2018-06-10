@@ -27,7 +27,7 @@ class Lolalytics extends ChampionsDataSource
     $champions = [];
 
     foreach ($elos as $elo) {
-      $html = $this->client->get(self::ELO_URIS[$elo]);
+      $html = $this->client->get(static::ELO_URIS[$elo]);
       $champions[$elo] = $this->parseDom($html);
     }
 
@@ -44,10 +44,8 @@ class Lolalytics extends ChampionsDataSource
 
     $rows = $xpath->query("//table[@id='championlist']//tr[td]");
     foreach ($rows as $row) {
-      // TODO: the Champion object is too coupled to ChampionGG api to use here
-      // Remake this with the Champion object later
       $champion = array(
-        'id'       => null,
+        // 'id'       => null,
         'name'     => null,
         'winRate'  => null,
         'playRate' => null,
@@ -55,9 +53,9 @@ class Lolalytics extends ChampionsDataSource
       );
     
       // TODO: can we retrieve the ID mapping from somewhere else?
-      $nodelist = $xpath->query("td[2]/div[@class='All']", $row);
+      $nodelist = $xpath->query("td[1]/div/@data-id", $row);
       if ($nodelist->length > 0) {
-        $champion['id'] = $nodelist->item(0)->nodeValue;
+        $champion['championId'] = $nodelist->item(0)->nodeValue;
       }
       
       $nodelist = $xpath->query("td[2]/div[@class='All']", $row);
@@ -80,7 +78,7 @@ class Lolalytics extends ChampionsDataSource
         $champion['banRate'] = $nodelist->item(0)->nodeValue;
       }
 
-      $champions[$champion['id']] = $champion;
+      $champions[$champion['championId']] = new Champion($champion, $champion['name']);
     }
 
     return $champions;

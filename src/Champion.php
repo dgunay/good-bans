@@ -36,10 +36,15 @@ class Champion
 
 	public function __construct(array $champion_gg, string $name) {
 		$this->id       = (string) $champion_gg['championId'];
+
+		// TODO: normalize these to a 0.0 - 1.0 scale
 		$this->winRate  = (float) $champion_gg['winRate'];
 		$this->playRate = (float) $champion_gg['playRate'];
 		$this->banRate  = (float) $champion_gg['banRate'];
+
+		// TODO: separate out champion.gg specific logic into a child class
 		$this->percentRolePlayed = (float) $champion_gg['percentRolePlayed'];
+
 		$this->elo      = $champion_gg['elo'];
 		$this->patch    = $champion_gg['patch'];
 		$this->name     = $name;
