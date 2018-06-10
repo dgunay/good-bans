@@ -4,17 +4,34 @@ namespace GoodBans;
 
 class Champion
 {
+	/** @var string */
 	private $id;
+
+	/** @var float */
 	private $winRate;
+
+	/** @var float */
 	private $playRate;
+
+	/** @var float */
 	private $banRate;
+
+	/** @var float */
 	private $percentRolePlayed;
+
+	/** @var string */
 	private $elo;
+
+	/** @var string */
 	private $patch;
+
+	/** @var string */
 	private $name;
-	
-	// computed the first time and then cached 
-	private $banValue         = null;
+
+	/** @var float */
+	private $banValue = null;
+
+	/** @var float */
 	private $adjustedPickRate = null;
 
 	public function __construct(array $champion_gg, string $name) {
@@ -82,10 +99,6 @@ class Champion
 
 		// TODO: should it be 1.0 or 100?
 		return (1.0 * $this->playRate) / (1.0 - $this->banRate);
-	}
-
-	public function weighted($value) {
-		return $value * $this->percentRolePlayed;
 	}
 
 	public function getBanRate() : float {
