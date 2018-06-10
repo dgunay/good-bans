@@ -53,7 +53,9 @@ class ChampionGG extends \GoodBans\ChampionsDataSource
 				$id = $champion['championId'];
 				if (array_key_exists($id, $aggregate_champions)) {
 					// aggregate champion data as arrays
-					$aggregate_champions[$elo][$id]['winRate'][]  = $champion['winRate'] * $champion['percentRolePlayed'];
+					// TODO: the math needs a look here
+					// TODO: how do you do weighted averages of winrate without bringing down the numbers super far?
+					$aggregate_champions[$elo][$id]['winRate'][]  = ($champion['winRate'] * $champion['percentRolePlayed']);
 					$aggregate_champions[$elo][$id]['banRate'][]  = $champion['banRate'];				
 					$aggregate_champions[$elo][$id]['playRate']  += $champion['playRate'];
 				}
@@ -66,6 +68,8 @@ class ChampionGG extends \GoodBans\ChampionsDataSource
 				}
 			}
 		}
+
+		print_r($aggregate_champions['bronze']['266']); exit;
 
 		foreach ($aggregate_champions as $elo => $champions) {
 			foreach ($champions as $id => $champion) {

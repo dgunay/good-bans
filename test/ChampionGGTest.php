@@ -24,7 +24,10 @@ final class ChampionGGTest extends TestCase
 	public function testGetChampions() {
 		foreach (ChampionGG::ELOS as $elo) {
 			$result = $this->gg->getChampions([$elo]);
+			
+			print_r($result['bronze']['266']); exit;
 
+			// TODO: is there a more effective way to test this?
 			$this->assertSame(
 				$result,
 				json_decode(
