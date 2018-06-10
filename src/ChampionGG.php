@@ -2,15 +2,13 @@
 
 namespace GoodBans;
 
-class ChampionGG
+class ChampionGG extends \GoodBans\ChampionsDataSource
 {
-	protected $key;
 	protected $champions = false;
-	protected $patch = null;
-	
-	public function __construct(string $api_key) {
-		$this->key = $api_key;
-	}
+	protected $patch     = null;
+	protected $key       = null;
+
+	const ELOS = ['bronze', 'silver', 'gold', 'platinum'];
 
 	/**
 	 * Gets all champion data from the champion.gg API.
@@ -20,77 +18,77 @@ class ChampionGG
 	 * @param string $elo bronze, silver, gold, or platinum.
 	 * @return array
 	 */
-	public function getChampions(string $elo = null) : array {
+	public function refreshChampions(array $elos = []) : array {
 		$params = [
 			'limit'     => 1000, 
 			'champData' => 'elo,playRate,winRate', // all we care about
-			'api_key'   => $this->key
+			'api_key'   => $this->client->getCredentials(),
 		];
 
-		if ($elo) {
-			$params['elo'] = strtoupper($elo);
+		// TODO: condense these with an array intersect operation maybe?
+		if (empty($elos)) {
+			// TODO: how to reconcile this with fixture data?
+			foreach (self::ELOS as $elo) {
+				$params['elo'] = strtoupper($elo);
+				$response = $this->get($params);
+				$this->champions[$elo] = json_decode($response, true);
+			}
 		}
-		
-		$response = $this->get("champions", $params);
+		else {
+			foreach ($elos as $elo) {
+				$params['elo'] = strtoupper($elo);
+				$response = $this->get($params);
+				$this->champions[$elo] = json_decode($response, true);
+			}
+		}
 
-		$this->champions = json_decode($response, true);
-		
-		return $this->champions;
+		return $this->aggregateRoles();	
 	}
 
 	public function aggregateRoles() : array {
-		// TODO: need to weight the average of each role by roleplaypercentage
 		$aggregate_champions = [];
 		// TODO: debug this until it's ironclad
-		foreach ($this->champions as $champion) {
-			$id = $champion['championId'];
-			if (array_key_exists($id, $aggregate_champions)) {
-				// aggregate champion data as arrays
-				$aggregate_champions[$id]['winRate'][]  = $champion['winRate'] * $champion['percentRolePlayed'];
-				// $aggregate_champions[$id]['winRate'][]  = $champion['winRate'];
-				$aggregate_champions[$id]['banRate'][]  = $champion['banRate'];				
-				$aggregate_champions[$id]['playRate']  += $champion['playRate'];
-			}
-			else {
-				// if this champ is new, reinitialize averaged fields as array
-				$aggregate_champions[$id] = $champion;
-				$aggregate_champions[$id]['winRate']  = [$champion['winRate'] * $champion['percentRolePlayed']];
-				// $champion[$id]['winRate']  = [$champion['winRate']];
-				$aggregate_champions[$id]['banRate']  = [$champion['banRate']];
-				$aggregate_champions[$id]['playRate'] = $champion['playRate'];
+		foreach ($this->champions as $elo => $champions) {
+			foreach ($champions as $champion) {
+				$id = $champion['championId'];
+				if (array_key_exists($id, $aggregate_champions)) {
+					// aggregate champion data as arrays
+					$aggregate_champions[$elo][$id]['winRate'][]  = $champion['winRate'] * $champion['percentRolePlayed'];
+					$aggregate_champions[$elo][$id]['banRate'][]  = $champion['banRate'];				
+					$aggregate_champions[$elo][$id]['playRate']  += $champion['playRate'];
+				}
+				else {
+					// if this champ is new, reinitialize averaged fields as array
+					$aggregate_champions[$elo][$id] = $champion;
+					$aggregate_champions[$elo][$id]['winRate']  = [$champion['winRate'] * $champion['percentRolePlayed']];
+					$aggregate_champions[$elo][$id]['banRate']  = [$champion['banRate']];
+					$aggregate_champions[$elo][$id]['playRate'] = $champion['playRate'];
+				}
 			}
 		}
 
-		foreach ($aggregate_champions as $id => $champion) {
-			// average wr and banrate
-			$champion['winRate'] = array_sum($champion['winRate']) / count($champion['winRate']);
-			$champion['banRate'] = array_sum($champion['banRate']) / count($champion['banRate']);
+		foreach ($aggregate_champions as $elo => $champions) {
+			foreach ($champions as $id => $champion) {
+				// average wr and banrate
+				$champion['winRate'] = array_sum($champion['winRate']) / count($champion['winRate']);
+				$champion['banRate'] = array_sum($champion['banRate']) / count($champion['banRate']);
 
-			$champions[$id] = $champion;
+				$aggregate_champions[$elo][$id] = new Champion($champion);
+			}
 		}
 
-		return $champions;
+		return $aggregate_champions;
 	}
 
 	/**
-	 * Makes a GET request to the champion.gg API.
-	 *
-	 *  TODO: use Guzzle, this sucks
+	 * Makes a GET request to the champions endpoint.
 	 * 
-	 * @param string $endpoint
 	 * @param array $args
 	 * @return string
 	 */
-	protected function get(string $endpoint, array $args = []) : string {
-		$args['api_key'] = $this->key;
-		$response = @file_get_contents(
-			'http://api.champion.gg/v2/' . $endpoint . '?' . http_build_query($args)
-		);
-
-		if ($response === false) {
-			throw new \RuntimeException(\error_get_last()['message']);
-		}
-
+	protected function get(array $args = []) : string {
+		$args['api_key'] = $this->client->getCredentials();
+		$response = $this->client->get('http://api.champion.gg/v2/champions', $args);
 		return $response;
 	}
 
@@ -105,12 +103,12 @@ class ChampionGG
 		}
 
 		if ($this->champions === false) {
-			throw new \Exception('Champions not cached yet (call getChampions() first.');
+			$this->getChampions();
 		}
 
 		$patches = [];
 		foreach ($this->champions as $champion) {
-			$patches []= $champion['patch'];
+			$patches[] = $champion['patch'];
 		}
 
 		// return most commonly occuring patch number
@@ -122,7 +120,7 @@ class ChampionGG
 
 	public function json() : string {
 		if ($this->champions === false) {
-			throw new \Exception('Champions not cached yet (call getChampions() first.');
+			$this->getChampions();
 		}
 
 		return json_encode($this->champions);

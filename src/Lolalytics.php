@@ -4,6 +4,7 @@ namespace GoodBans;
 
 use GoodBans\ChampionsDataSource;
 
+// TODO: should we scrape the patch number?
 class Lolalytics extends ChampionsDataSource
 {
   // Array of places to get data for each elo (last 7 days)
@@ -27,7 +28,8 @@ class Lolalytics extends ChampionsDataSource
     $champions = [];
 
     foreach ($elos as $elo) {
-      $html = $this->client->get(static::ELO_URIS[$elo]);
+      // FIXME: why does Guzzle emit so many warnings?
+      $html = @$this->client->get(static::ELO_URIS[$elo]);
       $champions[$elo] = $this->parseDom($html);
     }
 

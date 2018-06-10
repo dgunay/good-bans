@@ -3,16 +3,17 @@
 namespace GoodBans\Test;
 
 use GoodBans\Test\Mock\ChampionGG;
+use GoodBans\ApiClient;
 use PHPUnit\Framework\TestCase;
 
 final class ChampionGGTest extends TestCase
 {
 	protected $gg;
 
-	const ELOS = ['bronze', 'silver', 'gold', 'platinum'];
-
 	public function setUp() {
-		$this->gg = new ChampionGG();
+		$this->gg = new ChampionGG(
+			new ApiClient()
+		);
 	}
 
 	/**
@@ -21,28 +22,18 @@ final class ChampionGGTest extends TestCase
 	 * @return void
 	 */
 	public function testGetChampions() {
-		foreach (self::ELOS as $case) {
-			$result = $this->gg->getChampions($case);
+		foreach (ChampionGG::ELOS as $elo) {
+			$result = $this->gg->getChampions([$elo]);
 
 			$this->assertSame(
 				$result,
 				json_decode(
 					file_get_contents(
-						__DIR__ . "/data/ChampionGG/champions/{$case}.json"
+						__DIR__ . "/data/ChampionGG/champions/{$elo}.json"
 					),
 					true
 				)
 			);
-		}
-
-		$exceptional_cases = [
-			'uri_that_doesnt_exist'
-		];
-		
-		foreach ($exceptional_cases as $case) {
-			$this->expectException(\RuntimeException::class);
-
-			$this->gg->getChampions($case);
 		}
 	}
 

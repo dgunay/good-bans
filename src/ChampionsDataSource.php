@@ -48,4 +48,6 @@ abstract class ChampionsDataSource
 
   // TODO: define an iterable/keyval store of type Champion
   abstract protected function refreshChampions(array $elos = []) : array;
+
+  abstract public function getPatch() : string;
 }

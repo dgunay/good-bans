@@ -7,7 +7,7 @@ use GuzzleHttp\Client;
 /** Handles requests to any external API or data source */
 class ApiClient
 {
-  /** @var array */
+  /** @var string */
   protected $credentials;
 
   // TODO: should I bother with a sleep timer here?
@@ -15,20 +15,22 @@ class ApiClient
   /** @var GuzzleHttp\Client */
   protected $client;
 
-  public function __construct(Client $client = null) {
+  public function __construct(Client $client = null, string $credentials = '') {
     $this->client = $client ?? new Client();
-  }
-
-  public function setCredentials(array $credentials) {
     $this->credentials = $credentials;
   }
 
-  public function getCredentials() : array {
+  public function setCredentials(string $credentials) {
+    $this->credentials = $credentials;
+  }
+
+  public function getCredentials() : string {
     return $this->credentials;
   }
 
   public function get(string $endpoint, array $args = []) : string {
-    $response = $this->client->request('GET', $endpoint, ['query' => $args]);
+    // TODO: why does this cause problems for file:// calls?
+    $response = @$this->client->request('GET', $endpoint, ['query' => $args]);
     $body = $response->getBody();
     return (string) $body; // must cast to string for testing
   }
