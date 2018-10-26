@@ -20,9 +20,11 @@ final class LolalyticsTest extends TestCase
 	 * @return void
 	 */
 	public function testGetChampions() {
-		foreach (array_keys(Lolalytics::ELO_URIS) as $elo) {
-			$result = $this->lolalytics->getChampions([$elo]);
-			// TODO: what do we want to test?
-		}		
+		// foreach (array_keys(Lolalytics::ELO_URIS) as $elo) {
+		// 	$result = $this->lolalytics->getChampions([$elo]);
+		// 	// TODO: what do we want to test?
+		// }		
+
+		$this->markTestIncomplete();
 	}
 }

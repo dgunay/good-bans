@@ -85,4 +85,6 @@ class Lolalytics extends ChampionsDataSource
 
     return $champions;
   }
+
+  public function getPatch() : string { return ''; }
 }

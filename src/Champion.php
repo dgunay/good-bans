@@ -17,9 +17,6 @@ class Champion
 	/** @var float */
 	private $banRate;
 
-	/** @var float */
-	private $percentRolePlayed;
-
 	/** @var string */
 	private $elo;
 
