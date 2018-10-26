@@ -15,7 +15,8 @@ use GoodBans\ChampionGG as RealChampionGG;
 class ChampionGG extends RealChampionGG
 {
 	protected function get(array $args = []) : string {
-		$response = $this->client->get(
+		// $response = $this->client->get(
+		$response = file_get_contents(
 			'file://' . __DIR__ . "/../data/ChampionGG/champions/{$args['elo']}.json"
 		);
 		return $response;

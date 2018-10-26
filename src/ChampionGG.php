@@ -69,7 +69,7 @@ class ChampionGG extends \GoodBans\ChampionsDataSource
 			}
 		}
 
-		print_r($aggregate_champions['bronze']['266']); exit;
+		// print_r($aggregate_champions['bronze']['266']); exit;
 
 		foreach ($aggregate_champions as $elo => $champions) {
 			foreach ($champions as $id => $champion) {

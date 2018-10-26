@@ -12,7 +12,8 @@
     "require": {
         "php" : "^7.0",
         "psr/log": "^1.0",
-        "guzzlehttp/guzzle": "~6.0"
+        "guzzlehttp/guzzle": "~6.0",
+        "dolejska-daniel/riot-api": "^2.0"
     },
     "autoload": {
         "psr-4": {
