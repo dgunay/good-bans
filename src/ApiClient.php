@@ -34,4 +34,19 @@ class ApiClient
     $body = $response->getBody();
     return (string) $body; // must cast to string for testing
   }
+
+  /**
+   * POSTs to an endpoint. The body must be a string, encoded yourself (so if
+   * you want json, use json_encode. If you want HTTP query string, use
+   * http_build_query()).
+   *
+   * @param string $endpoint
+   * @param string $body
+   * @return string
+   */
+  public function post(string $endpoint, string $body = '') : string {
+    $response = @$this->client->request('POST', $endpoint, ['body' => $body]);
+    $body = $response->getBody();
+    return (string) $body; // must cast to string for testing
+  }
 }
