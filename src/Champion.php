@@ -3,6 +3,7 @@
 namespace GoodBans;
 
 // TODO: can I make this work with JSON encode?
+// TODO: should it extend RiotAPI\Objects\StaticData\StaticChampionDto?
 class Champion
 {
 	/** @var string */
@@ -40,9 +41,6 @@ class Champion
 		$this->playRate = (float) $champion['playRate'];
 		$this->banRate  = (float) $champion['banRate'];
 
-		// TODO: separate out champion.gg specific logic into a child class
-		$this->percentRolePlayed = (float) $champion['percentRolePlayed'];
-
 		$this->elo      = $champion['elo'];
 		$this->patch    = $champion['patch'];
 		$this->name     = $champion['name'] ?? null;
@@ -54,10 +52,6 @@ class Champion
 
 	public function getWinRate() : float {
 		return $this->winRate;
-	}
-
-	public function getPercentRolePlayed() : float {
-		return $this->percentRolePlayed;
 	}
 
 	public function getPlayRate() : float {

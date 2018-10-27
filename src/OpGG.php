@@ -4,6 +4,7 @@ namespace GoodBans;
 
 use GoodBans\ChampionsDataSource;
 use GoodBans\ApiClient;
+use RiotAPI\RiotAPI;
 
 /**
  * TODO: implement requesting by (if possible):
@@ -44,8 +45,8 @@ class OpGG extends ChampionsDataSource
    * @param ApiClient $client
    * @param string[] ...$regions
    */
-  public function __construct(ApiClient $client = null, string ...$regions) {    
-    parent::__construct($client);
+  public function __construct(ApiClient $client = null, RiotAPI $riot, string ...$regions) {    
+    parent::__construct($client, $riot);
 
     if (!empty($regions)) {
       if (!isValid(self::REGION_SUBDOMAINS, $regions)) { 
@@ -75,18 +76,46 @@ class OpGG extends ChampionsDataSource
     return true;
   }
 
-  // TODO: define an iterable/keyval store of type Champion
   protected function refreshChampions(array $elos = []) : array {
     $data = [];
     foreach ($elos as $elo) {
-      $data[] = [
-        'winrate'  => $this->getStats('win', $elo),
-        'banrate'  => $this->getStats('banned', $elo),
-        'pickrate' => $this->getStats('picked', $elo),
-      ];
+      $winrates  = $this->getStats('win', $elo);
+      $banrates  = $this->getStats('banned', $elo);
+      $pickrates = $this->getStats('picked', $elo);
+      
+      // Check they all have the same number of data points
+      $counts = [count($winrates), count($banrates), count($pickrates)];
+      if (count(array_unique($counts)) !== 1) {
+        throw new \UnexpectedValueException("Counts not equal");
+      }
+
+      $champs_by_elo = [];
+      foreach ($winrates as $name => $wr) {
+        $champs_by_elo[$elo][$name]['winRate'] = $wr;
+      }
+      foreach ($banrates as $name => $br) {
+        $champs_by_elo[$elo][$name]['banRate'] = $br;
+      }
+      foreach ($pickrates as $name => $pr) {
+        $champs_by_elo[$elo][$name]['pickRate'] = $pr;
+      }
     }
 
-    return $data;
+    $champ_objects = [];
+    foreach ($champs_by_elo as $elo => $champs) {
+      foreach ($champs as $name => $data) {
+        $champ_objects[$elo] = new Champion(array_merge(
+          [
+            'name' => $name, 
+            'elo' => $elo,
+            // TODO: RiotAPI for champ id
+          ], 
+          $data
+        ));
+      }
+    }
+
+    return $champ_objects;
   }
 
   private function getStats(
@@ -106,6 +135,7 @@ class OpGG extends ChampionsDataSource
       throw new \UnexpectedValueException("Period '$period' is invalid.");
     } 
 
+    $stats_by_region = [];
     $aggregate_stats = [];
     foreach ($this->regions as $region) {
       $response = $this->client->post(
@@ -121,7 +151,14 @@ class OpGG extends ChampionsDataSource
 
       // parse the response
       $stats = $this->parseAjaxResponse($response);
-      $aggregate_stats[] = $stats;
+      $stats_by_region[$region] = $stats;
+    }
+
+    $aggregate_stats = [];
+    foreach ($stats_by_region as $stats) {
+      foreach ($stats as $champ) {
+        $aggregate_stats[$champ['name']] = $champ['stat'];
+      }
     }
 
     return $aggregate_stats;

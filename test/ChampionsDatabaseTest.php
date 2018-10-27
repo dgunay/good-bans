@@ -23,5 +23,4 @@ final class ChampionsDatabaseTest // extends TestCase
 		$this->db = null;
 	}
 
-	
 }

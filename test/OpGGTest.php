@@ -5,12 +5,13 @@ namespace GoodBans\Test;
 use GoodBans\OpGG;
 use GoodBans\ApiClient;
 use GoodBans\Champion;
+use RiotAPI\RiotAPI;
 use PHPUnit\Framework\TestCase;
 
 final class OpGGTest extends TestCase
 {
 	/**
-	 * Tests that getChampions() makes a request and parses the HTML.
+	 * Tests that getChampions() returns an array of Champion.
 	 *
 	 * @dataProvider validDataProvider
 	 * @return void
@@ -20,26 +21,27 @@ final class OpGGTest extends TestCase
 			new class extends ApiClient {
 				public function post(string $endpoint, string $body = '') : string {
 					parse_str($body, $params); // decode url query params from the body
-					if ($params['league'] === '') { $params['league'] = 'all'; }
+					if ($params['league'] === '') { $params['league'] = 'all'; } // can't have empty dirnames
 					return file_get_contents(
 						__DIR__ . "/data/OpGG/{$params['type']}/{$params['league']}/data.html"
 					);
 				}
-			}
+			},
+			new class extends RiotAPI { function __construct() {} }
 		);
+
 		$champs = $gg->getChampions([$league]);
 
 		foreach ($champs as $champ) {
 			$this->assertInstanceOf(Champion::class, $champ);
 		}
-    // $this->markTestIncomplete();
 	}
 
 	// public function testGetChampionsDoesntThrowExceptions() {
 
 	// }
 
-	// Gives paths to all <type>/<league>/data.html in OpGG fixture data folders
+	// Gets all combinations of type and league
 	public function validDataProvider() {
 		$types = [];
 		foreach (glob(__DIR__ . '/data/OpGG/*') as $file) {

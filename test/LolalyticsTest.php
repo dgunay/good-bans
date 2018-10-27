@@ -11,11 +11,11 @@ final class LolalyticsTest extends TestCase
 	protected $lolalytics;
 
 	public function setUp() {
-		$this->lolalytics = new Lolalytics();
+		// $this->lolalytics = new Lolalytics(null, new );
 	}
 
 	/**
-	 * Tests that getChampions() makes a request and decodes the json.
+	 * Tests that getChampions() makes a request and decodes the result.
 	 *
 	 * @return void
 	 */

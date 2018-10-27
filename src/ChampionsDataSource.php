@@ -15,11 +15,15 @@ abstract class ChampionsDataSource
   /** @var Champion[][] $champions Map of 'elo' => Champion[] */
   protected $champions = [];
 
-  /** @var ApiClient */
+  /** @var ApiClient $client */
   protected $client;
 
-  public function __construct(ApiClient $client = null) {
+  /** @var RiotAPI\RiotAPI $riot */
+  protected $riot;
+
+  public function __construct(ApiClient $client = null, RiotAPI $riot) {
     $this->client = $client ?? new ApiClient();
+    $this->riot   = $riot;
   }
 
   /**
