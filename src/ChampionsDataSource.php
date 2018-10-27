@@ -47,7 +47,7 @@ abstract class ChampionsDataSource
     return $this->refreshChampions($elos);
   }
 
-  // TODO: define an iterable/keyval store of type Champion
+  
   abstract protected function refreshChampions(array $elos = []) : array;
 
   /**

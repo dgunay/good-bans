@@ -77,11 +77,16 @@ class OpGG extends ChampionsDataSource
 
   // TODO: define an iterable/keyval store of type Champion
   protected function refreshChampions(array $elos = []) : array {
-    return [];
-
+    $data = [];
     foreach ($elos as $elo) {
-      // TODO: get the stuff 
+      $data[] = [
+        'winrate'  => $this->getStats('win', $elo),
+        'banrate'  => $this->getStats('banned', $elo),
+        'pickrate' => $this->getStats('picked', $elo),
+      ];
     }
+
+    return $data;
   }
 
   private function getStats(
@@ -89,6 +94,8 @@ class OpGG extends ChampionsDataSource
     string $league = '', 
     string $period = 'month'
   ) {
+    if ($league === 'all') { $league = ''; }
+
     if (!$this->isValid(self::GRAPH_TYPES, $type)) {
       throw new \UnexpectedValueException("Type '$type' is invalid.");
     }
@@ -97,8 +104,9 @@ class OpGG extends ChampionsDataSource
     }
     if (!$this->isValid(self::PERIODS, $period)) {
       throw new \UnexpectedValueException("Period '$period' is invalid.");
-    }
+    } 
 
+    $aggregate_stats = [];
     foreach ($this->regions as $region) {
       $response = $this->client->post(
         "http://{$region}.op.gg/statistics/ajax2/champion/", 
@@ -110,12 +118,13 @@ class OpGG extends ChampionsDataSource
           'queue' => self::QUEUE,
         ])
       );
+
+      // parse the response
+      $stats = $this->parseAjaxResponse($response);
+      $aggregate_stats[] = $stats;
     }
 
-    // parse the response
-    $stats = $this->parseAjaxResponse($response);
-
-    return $stats;
+    return $aggregate_stats;
   }
 
   private function parseAjaxResponse(string $html) : array {
@@ -123,16 +132,39 @@ class OpGG extends ChampionsDataSource
     @$dom->loadHTML($html);
     $x = new \DOMXPath($dom);
 
-    // TODO: xpaths
-    $rows = $x->query("//tbody[@class='content']/tr");
+    $data = [/* 
+      [ 'name' => '', 'stat' => '' ],
+      ... */
+    ];
+    $rows = $x->query("//tbody[@class='Content']/tr");
     if ($rows->count()) {
       foreach ($rows as $row) {
-        
+        // name
+        $name = null;
+        $nodelist = $x->query("./td[3]/a", $row);
+        if ($nodelist->count()) {
+          $name = $nodelist->item(0)->nodeValue;
+        }
+
+        // primary stat (wr/lr/pickrate/banrate)
+        $stat = null;
+        $nodelist = $x->query("./td[4]/span", $row);
+        if ($nodelist->count()) {
+          $stat = $nodelist->item(0)->nodeValue;
+        } 
+
+        if ($name === null || $stat === null) {
+          throw new \UnexpectedValueException("No value found for name or statistic");
+        }
+
+        $data[] = ['name' => $name, 'stat' => $stat];
       }
     }
     else {
       throw new \Exception('No rows found.');
     }
+
+    return $data;
   }
 
   // private function getFromXpath(\DOMXPath $x, string $xpath, \DOMNode $ctx = null) {

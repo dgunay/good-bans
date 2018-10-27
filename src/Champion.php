@@ -35,7 +35,7 @@ class Champion
 	public function __construct(array $champion) {
 		$this->id       = (string) $champion['championId'];
 
-		// TODO: normalize these to a 0.0 - 1.0 scale
+		// TODO: throw exception if these aren't normalized to 0.0 - 1.0 scale
 		$this->winRate  = (float) $champion['winRate'];
 		$this->playRate = (float) $champion['playRate'];
 		$this->banRate  = (float) $champion['banRate'];

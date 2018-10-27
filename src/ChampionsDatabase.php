@@ -140,7 +140,6 @@ class ChampionsDatabase
 		// TODO: need to weight the average of each role by roleplaypercentage
 		// TOdO: how can I use the Champion() class here?
 		$champions = [];
-		print_r($champion_gg_data); exit;
 		// TODO: debug this until it's ironclad
 		foreach ($champion_gg_data as $champion) {
 			if (is_array($champion['winRate'])) {
