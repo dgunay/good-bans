@@ -219,6 +219,7 @@ class Lolalytics extends ChampionsDataSource
   public function getPatch() : string { 
     if ($this->patch !== null) { return $this->patch; }
 
+    // FIXME: this causes problems when viewing the page, find a way to use the db.
     throw new \RuntimeException(__CLASS__ . ' cannot call getPatch() before scrape()');
   }
 }

@@ -1,11 +1,10 @@
 make view prettier
 update champions every day
 cache champ images https://developer.riotgames.com/static-data.html
-tests
 
 version 1.0 should have:
 - complete test coverage
-- optional caching of champ images
 
 other nice features:
 - make an interface to normalize different data sources so they can be aggregated
+- actually use that interface (ChampionsDataSource)
