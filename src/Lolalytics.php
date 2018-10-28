@@ -17,6 +17,8 @@ class Lolalytics extends ChampionsDataSource
     'master'   => 'https://lolalytics.com/ranked/worldwide/master/plus/champions/',
   ];
 
+  public function getElos(): array { return array_keys(self::ELO_URIS); }
+
   protected function refreshChampions(array $elos = []) : array {
     return $this->scrape($elos);
   }

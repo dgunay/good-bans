@@ -25,14 +25,14 @@ class ChampionsDatabase
 
 	public function __construct(
 		\PDO $pdo, 
-		ChampionsDataSource $champion_gg,
+		ChampionsDataSource $champion_data,
 		RiotChampions $riot_champions,
 		Logger $logger = null
 	) {
 		$this->db = $pdo;
 		$this->db->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
 
-		$this->champion_gg = $champion_gg;
+		$this->champion_data  = $champion_data;
 		$this->riot_champions = $riot_champions;
 
 		if ($logger === null) {

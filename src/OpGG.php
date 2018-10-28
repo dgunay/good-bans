@@ -40,6 +40,10 @@ class OpGG extends ChampionsDataSource
   /** @var string[] $regions */
   private $regions = ['na', 'euw', 'www'];
 
+  public function getElos(): array {
+    return array_filter(self::LEAGUES);
+  }
+
   /**
    * Allows you to select a list of regions to grab data from. By default it
    * will just return data for NA, EUW, and KR.

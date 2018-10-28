@@ -82,4 +82,11 @@ abstract class ChampionsDataSource
    * @return string
    */
   abstract public function getPatch() : string;
+
+  /**
+   * Returns all elos that the data source aggregates as lowercased strings.
+   *
+   * @return array
+   */
+  abstract public function getElos() : array;
 }

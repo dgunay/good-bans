@@ -6,9 +6,7 @@ remade it.
 
 ## Requirements
 
-- a champion.gg API key. [Go here to get one, it's easy.](http://api.champion.gg/)
 - PHP 7.0+
-- A [database vendor compatible with PDO](http://php.net/manual/en/pdo.drivers.php).
 
 ## Installation
 
@@ -17,18 +15,18 @@ remade it.
 2. Make sure you don't already have a table called "champions", it will overwrite
 that. To refresh the database, use `refresh_db.php` as an example:
 
+TODO: rewrite this whole thing
 ```php
 require __DIR__ . '/vendor/autoload.php';
 require __DIR__ . '/../config.php';
 
-use GoodBans\ChampionGG;
+use GoodBans\OpGG;
 use GoodBans\RiotChampions;
 use GoodBans\ChampionsDatabase;
 
 $db = new ChampionsDatabase(
 	new \PDO('sqlite:/path/to/your_db.db'), // use whatever PDO you like
-	new ChampionGG('your champion.gg key'),
-	new RiotChampions('latest')
+	new OpGG(),
 );
 
 $db->refresh();
