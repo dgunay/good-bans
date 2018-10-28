@@ -184,7 +184,7 @@ class OpGG extends ChampionsDataSource
     throw new \UnexpectedValueException("0 or more than 1 patch found.");
   }
 
-  private function getStats(
+  protected function getStats(
     string $type = 'win', 
     string $league = '', 
     string $period = 'month'
@@ -206,13 +206,13 @@ class OpGG extends ChampionsDataSource
     foreach ($this->regions as $region) {
       $response = $this->client->post(
         "http://{$region}.op.gg/statistics/ajax2/champion/", 
-        http_build_query([
+        [
           'type'   => $type,
           'league' => $league,
           'period' => $period,
-          'mapId' => self::MAP_ID,
-          'queue' => self::QUEUE,
-        ])
+          'mapId'  => self::MAP_ID,
+          'queue'  => self::QUEUE,
+        ]
       );
 
       // parse the response

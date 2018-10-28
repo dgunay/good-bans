@@ -29,7 +29,6 @@ class ApiClient
   }
 
   public function get(string $endpoint, array $args = []) : string {
-    // TODO: why does this cause problems for file:// calls?
     $response = @$this->client->request('GET', $endpoint, ['query' => $args]);
     $body = $response->getBody();
     return (string) $body; // must cast to string for testing
@@ -44,9 +43,8 @@ class ApiClient
    * @param string $body
    * @return string
    */
-  public function post(string $endpoint, string $body = '') : string {
-    echo "Sending POST to $endpoint with body $body\n";
-    $response = @$this->client->request('POST', $endpoint, ['body' => $body]);
+  public function post(string $endpoint, array $body = []) : string {
+    $response = @$this->client->request('POST', $endpoint, ['form_params' => $body]);
     $body = $response->getBody();
     return (string) $body; // must cast to string for testing
   }

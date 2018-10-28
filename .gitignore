@@ -1,5 +1,6 @@
 /vendor/
 /cache/
+/.vscode/
 *.phar
 *.db
 
