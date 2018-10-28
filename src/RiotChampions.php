@@ -13,7 +13,7 @@ class RiotChampions
 	protected $versions = [];
 
 	/** @var string $cached_version */
-	protected $cached_version = '';
+	protected $cached_version = null;
 
 	// TODO: add checks for cache state
 	/** @var array $cached_champs */
@@ -26,7 +26,6 @@ class RiotChampions
 	const FILE_URI_PATTERN = 'http://ddragon.leagueoflegends.com/cdn/%s/data/en_US/champion.json';
 
 	/**
-	 * @throws \DomainException DataDragon 
 	 * @param string $patch DataDragon version number.
 	 */
 	public function __construct() {
@@ -40,6 +39,11 @@ class RiotChampions
 		$this->versions = $versions;	
 	}
 
+	/**
+	 * @throws \DomainException DataDragon 
+	 * @param string $version
+	 * @return array
+	 */
 	public function getChampions(string $version) : array {
 		if ($version === 'latest') {
 			$version = $this->versions[0];

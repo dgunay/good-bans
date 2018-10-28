@@ -3,6 +3,8 @@
 namespace GoodBans;
 
 use GoodBans\ApiClient;
+use RiotAPI\RiotAPI;
+use RiotAPI\Definitions\Region;
 
 /**
  * Specifies what functionality a data source (i.e. Champion.gg, op.gg, etc)
@@ -11,12 +13,21 @@ use GoodBans\ApiClient;
  */
 abstract class ChampionsDataSource
 {
-  /** @var array */
+  /** @var Champion[][] $champions Map of 'elo' => Champion[] */
   protected $champions = [];
 
-  /** @var ApiClient */
+  /** @var string $patch */
+  protected $patch;
+  
+  /** @var ApiClient $client */
   protected $client;
 
+  /**
+   * TODO: document
+   *
+   * @param ApiClient $client
+   * @param RiotAPI $riot
+   */
   public function __construct(ApiClient $client = null) {
     $this->client = $client ?? new ApiClient();
   }
@@ -43,11 +54,39 @@ abstract class ChampionsDataSource
       return array_intersect_key($this->champions, array_flip($elos));
     }
 
-    return $this->refreshChampions($elos);
+    $champs = $this->refreshChampions($elos);
+    foreach ($champs as $elo => $c) {
+      if (!$this->containsOnlyChampions($c)) {
+        throw new \UnexpectedValueException(
+          "Array does not contain only Champion objects"
+        );
+      }
+    }
+
+    return $champs;
   }
 
-  // TODO: define an iterable/keyval store of type Champion
+  protected function containsOnlyChampions(array $champs) : bool {
+    foreach ($champs as $champ) {
+      if (!($champ instanceof Champion)) { return false; }
+    }
+
+    return true;
+  }
+
   abstract protected function refreshChampions(array $elos = []) : array;
 
+  /**
+   * Returns the patch this data source has.
+   *
+   * @return string
+   */
   abstract public function getPatch() : string;
+
+  /**
+   * Returns all elos that the data source aggregates as lowercased strings.
+   *
+   * @return array
+   */
+  abstract public function getElos() : array;
 }

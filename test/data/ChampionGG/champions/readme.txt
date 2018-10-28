@@ -1,1 +1,0 @@
-cached snapshots from the champion.gg API

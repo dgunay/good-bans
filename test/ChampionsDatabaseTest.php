@@ -3,25 +3,82 @@
 namespace GoodBans\Test;
 
 use GoodBans\ChampionsDatabase;
-use GoodBans\Test\Mock\ChampionGG;
+use GoodBans\Test\Mock\OpGG;
+use GoodBans\Test\Mock\Lolalytics;
 use GoodBans\Test\Mock\RiotChampions;
+use GoodBans\Logger;
 use PHPUnit\Framework\TestCase;
+use GoodBans\ChampionsDataSource;
 
-final class ChampionsDatabaseTest // extends TestCase
+final class ChampionsDatabaseTest extends TestCase
 {
-	protected $db;
-
-	protected function setUp() {
-		$this->db = new ChampionsDatabase(
+	public function testOpGG() {
+		$db = new ChampionsDatabase(
 			new \PDO('sqlite::memory:'),
-			new ChampionGG(),
-			new RiotChampions()
+			new OpGG(),
+			new RiotChampions(),
+			new Logger(fopen('php://memory', 'w'))
 		);
+
+		$this->assertTrue(true);
 	}
 
-	protected function tearDown() {
-		$this->db = null;
+	public function testLolalytics() {
+		$db = new ChampionsDatabase(
+			new \PDO('sqlite::memory:'),
+			new Lolalytics(),
+			new RiotChampions(),
+			new Logger(fopen('php://memory', 'w'))
+		);
+
+		$this->assertTrue(true);
 	}
 
-	
+	/**
+	 * Undocumented function
+	 *
+	 * @dataProvider dataSourceProvider
+	 * @param ChampionsDataSource $source
+	 * @return void
+	 */
+	public function testTopBans(ChampionsDataSource $source) {
+		$db = new ChampionsDatabase(
+			new \PDO('sqlite::memory:'),
+			$source,
+			new RiotChampions(),
+			new Logger(fopen('php://memory', 'w'))
+		);
+
+		$db->refresh();
+
+		$db->topBans();
+		$this->assertTrue(true);
+	}
+
+	/**
+	 * @dataProvider dataSourceProvider
+	 * @param ChampionsDataSource $source
+	 * @return void
+	 */
+	public function testGetAll(ChampionsDataSource $source) {
+		$db = new ChampionsDatabase(
+			new \PDO('sqlite::memory:'),
+			$source,
+			new RiotChampions(),
+			new Logger(fopen('php://memory', 'w'))
+		);
+
+		$db->refresh();
+
+		$champs = $db->getAllChampions();
+		$this->assertNotEmpty($champs);
+	}
+
+	public function dataSourceProvider() {
+		return [
+			// Extend these into mocks that return super simple data
+			[new OpGG],
+			[new Lolalytics()],
+		];
+	}
 }

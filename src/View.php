@@ -3,18 +3,15 @@
 namespace GoodBans;
 
 use GoodBans\RiotChampions;
+use GoodBans\TopBans;
 
 class View
 {
-	/** @var array */
+	/** @var GoodBans\TopBans $bans */
 	protected $bans;
 
-	/** @var string */
-	protected $patch;
-
-	public function __construct(array $bans) {
-		$this->bans  = $bans['top_bans'];	
-		$this->patch = $bans['patch'];
+	public function __construct(TopBans $bans) {
+		$this->bans = $bans;	
 	}
 
 	/**
@@ -28,12 +25,12 @@ class View
 		$text .= '<div class="row justify-content-md-left align-items-center">
 			<div class="col-md-6">
 				<h2 class="display-4">
-					Patch ' . $this->patch . ' Top Bans
+					Patch ' . $this->bans->getPatch() . ' Top Bans
 				</h2>
 			</div>
 		</div>';
 
-		foreach ($this->bans as $elo => $top_bans) {
+		foreach ($this->bans->getTopBans() as $elo => $top_bans) {
 			// elo row
 			$text .= '<div class="row justify-content-md-left align-items-center" style="margin-top:20px">
 				<h4 class="">
