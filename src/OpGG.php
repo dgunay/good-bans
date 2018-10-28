@@ -89,25 +89,59 @@ class OpGG extends ChampionsDataSource
 
   protected function refreshChampions(array $elos = []) : array {
     $data = [];
+    if (empty($elos)) { $elos = $this->getElos(); }
     foreach ($elos as $elo) {
-      $winrates  = $this->getStats('win', $elo);
-      $banrates  = $this->getStats('banned', $elo);
-      $pickrates = $this->getStats('picked', $elo);
-      
-      // Check they all have the same number of data points
-      $counts = [count($winrates), count($banrates), count($pickrates)];
+      $separate_stats = [
+        'winrates'  => $this->getStats('win', $elo),
+        'banrates'  => $this->getStats('banned'), // these don't have elo-specific stats
+        'pickrates' => $this->getStats('picked'), // these don't have elo-specific stats
+      ];
+
+      // Throw out champions that don't have a presence in all three arrays
+      // (this happens because sometimes challenger is missing data)
+      $counts = [
+        'winrates'  => count($separate_stats['winrates']), 
+        'banrates'  => count($separate_stats['banrates']), 
+        'pickrates' => count($separate_stats['pickrates'])
+      ];
       if (count(array_unique($counts)) !== 1) {
-        throw new \UnexpectedValueException("Counts not equal");
+        asort($counts);
+  
+        // find the key for the odd one out
+        $key_of_lowest_count = array_keys($counts)[0];
+
+        // TODO: this is an assumption - that banrates will exist for everything
+        foreach ($separate_stats['banrates'] as $name => $etc) {
+          if (!array_key_exists($name, $separate_stats[$key_of_lowest_count])) {
+            foreach ($separate_stats as $key => $stats)
+            unset($separate_stats[$key][$name]);
+          }
+        }
       }
 
+
+      // remove the missing champ from the rest of the stats
+
+
+      // Check they all have the same number of data points
+      // TODO: sometimes challenger actually doesn't have all the champs
+      // $counts = [count($winrates), count($banrates), count($pickrates)];
+      // print_r($counts);
+      // print_r(array_unique($counts));
+      // if (count(array_unique($counts)) !== 1) {
+      //   throw new \UnexpectedValueException("Counts not equal for elo $elo");
+      // }
+
       $champs_by_elo = [];
-      foreach ($winrates as $name => $wr) {
+      foreach ($separate_stats['winrates'] as $name => $wr) {
         $champs_by_elo[$elo][$name]['winRate'] = $wr;
       }
-      foreach ($banrates as $name => $br) {
+      foreach ($separate_stats['banrates'] as $name => $br) {
+        if (!isset($champs_by_elo[$elo][$name]['winRate'])) { break; }
         $champs_by_elo[$elo][$name]['banRate'] = $br;
       }
-      foreach ($pickrates as $name => $pr) {
+      foreach ($separate_stats['pickrates'] as $name => $pr) {
+        if (!isset($champs_by_elo[$elo][$name])) { break; }
         $champs_by_elo[$elo][$name]['pickRate'] = $pr;
       }
     }
@@ -116,6 +150,8 @@ class OpGG extends ChampionsDataSource
     $champ_objects = [];
     foreach ($champs_by_elo as $elo => $champs) {
       foreach ($champs as $name => $data) {
+        // echo $name;
+        // print_r($data);
         $champ_objects[$elo][] = new Champion(array_merge(
           [
             'name'      => $name, 

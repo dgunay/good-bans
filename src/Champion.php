@@ -33,9 +33,16 @@ class Champion
 	/** @var float */
 	private $adjustedPickRate = null;
 
-	public function __construct(array $champion) {
-		// $this->id       = (string) $champion['championId'];
+	protected const REQUIRED = [ 'winRate', 'playRate', 'banRate', 'elo', 'patch', 'name' ];
 
+	public function __construct(array $champion) {
+		foreach (self::REQUIRED as $field) {
+			if (!array_key_exists($field, $champion)) {
+				throw new \BadMethodCallException("Field '$field' required to construct " . __CLASS__);
+			}
+		}
+
+		// $this->id       = (string) $champion['championId'];
 		// TODO: throw exception if these aren't normalized to 0.0 - 1.0 scale
 		$this->winRate  = (float) $champion['winRate'];
 		$this->playRate = (float) $champion['playRate'];
