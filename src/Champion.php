@@ -42,7 +42,8 @@ class Champion
 			}
 		}
 
-		// $this->id       = (string) $champion['championId'];
+		$this->id       = (string) isset($champion['championId']) ? $champion['championId'] : null;
+
 		// TODO: throw exception if these aren't normalized to 0.0 - 1.0 scale
 		$this->winRate  = (float) $champion['winRate'];
 		$this->playRate = (float) $champion['playRate'];
@@ -53,7 +54,7 @@ class Champion
 		$this->name     = $champion['name'];
 	}
 
-	public function getId() : string {
+	public function getId() {
 		return $this->id;
 	}
 

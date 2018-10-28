@@ -67,6 +67,7 @@ class ChampionsDatabase
 		
 		// Map champion ID to name
 		$champ_names = $this->riot_champions->getChampNameMap('latest');
+		$name_map = array_flip($champ_names);
 
 		// Make the table if it doesn't exist
 		$this->initializeTable();
@@ -81,8 +82,6 @@ class ChampionsDatabase
 		foreach ($champs_by_elo as $elo => $champions) {
 			// TODO: needs refactor after ChampionsDataSource
 			foreach ($champions as $champion) {
-				exit;
-				print_r($champions); exit;
 
 				// Bind our values for protection against SQL injection
 				$statement = $this->db->prepare("INSERT INTO champions (
@@ -93,7 +92,7 @@ class ChampionsDatabase
 				)");
 
 				$statement->execute([
-					':id'               => $champion->getId(),
+					':id'               => $champion->getId() ?? $name_map[$champion->getName()],
 					':winRate'          => $champion->getWinRate(),
 					':playRate'         => $champion->getPlayRate(),
 					':name'             => $champion->getName(),
@@ -102,7 +101,7 @@ class ChampionsDatabase
 					':banRate'          => $champion->getBanRate(),
 					':banValue'         => $champion->banValue(),
 					':patch'            => $champion->getPatch(),
-					':img'              => $img_urls[$champion->getId()],
+					':img'              => $img_urls[$name_map[$champion->getName()]],
 				]);
 			}
 		}

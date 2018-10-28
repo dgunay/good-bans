@@ -90,6 +90,8 @@ class OpGG extends ChampionsDataSource
   protected function refreshChampions(array $elos = []) : array {
     $data = [];
     if (empty($elos)) { $elos = $this->getElos(); }
+    
+    $champs_by_elo = [];
     foreach ($elos as $elo) {
       $separate_stats = [
         'winrates'  => $this->getStats('win', $elo),
@@ -132,7 +134,6 @@ class OpGG extends ChampionsDataSource
       //   throw new \UnexpectedValueException("Counts not equal for elo $elo");
       // }
 
-      $champs_by_elo = [];
       foreach ($separate_stats['winrates'] as $name => $wr) {
         $champs_by_elo[$elo][$name]['winRate'] = $wr;
       }
