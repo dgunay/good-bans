@@ -2,14 +2,22 @@
 
 namespace GoodBans\Test;
 
-use GoodBans\OpGG;
+use GoodBans\Test\Mock\OpGG;
 use GoodBans\ApiClient;
 use GoodBans\Champion;
 use RiotAPI\RiotAPI;
+use RiotAPI\Definitions\Region;
 use PHPUnit\Framework\TestCase;
 
 final class OpGGTest extends TestCase
 {
+
+	private $gg;
+
+	public function setUp() {
+		$this->gg = new OpGG();
+	}
+
 	/**
 	 * Tests that getChampions() returns an array of Champion.
 	 *
@@ -17,29 +25,9 @@ final class OpGGTest extends TestCase
 	 * @return void
 	 */
 	public function testGetChampions(string $type, string $league) {
-    $gg = new OpGG(
-			new class extends ApiClient {
-				public function post(string $endpoint, string $body = '') : string {
-					parse_str($body, $params); // decode url query params from the body
-					if ($params['league'] === '') { $params['league'] = 'all'; } // can't have empty dirnames
-					return file_get_contents(
-						__DIR__ . "/data/OpGG/{$params['type']}/{$params['league']}/data.html"
-					);
-				}
-			},
-			new class extends RiotAPI { function __construct() {} }
-		);
-
-		$champs = $gg->getChampions([$league]);
-
-		foreach ($champs as $champ) {
-			$this->assertInstanceOf(Champion::class, $champ);
-		}
+		$champs_by_elo = $this->gg->getChampions([$league]);
+		$this->assertTrue(true);
 	}
-
-	// public function testGetChampionsDoesntThrowExceptions() {
-
-	// }
 
 	// Gets all combinations of type and league
 	public function validDataProvider() {

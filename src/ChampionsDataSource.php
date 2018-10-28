@@ -4,6 +4,7 @@ namespace GoodBans;
 
 use GoodBans\ApiClient;
 use RiotAPI\RiotAPI;
+use RiotAPI\Definitions\Region;
 
 /**
  * Specifies what functionality a data source (i.e. Champion.gg, op.gg, etc)
@@ -15,15 +16,20 @@ abstract class ChampionsDataSource
   /** @var Champion[][] $champions Map of 'elo' => Champion[] */
   protected $champions = [];
 
+  /** @var string $patch */
+  protected $patch;
+  
   /** @var ApiClient $client */
   protected $client;
 
-  /** @var RiotAPI\RiotAPI $riot */
-  protected $riot;
-
-  public function __construct(ApiClient $client = null, RiotAPI $riot) {
+  /**
+   * TODO: document
+   *
+   * @param ApiClient $client
+   * @param RiotAPI $riot
+   */
+  public function __construct(ApiClient $client = null) {
     $this->client = $client ?? new ApiClient();
-    $this->riot   = $riot;
   }
 
   /**
@@ -48,10 +54,26 @@ abstract class ChampionsDataSource
       return array_intersect_key($this->champions, array_flip($elos));
     }
 
-    return $this->refreshChampions($elos);
+    $champs = $this->refreshChampions($elos);
+    foreach ($champs as $elo => $c) {
+      if (!$this->containsOnlyChampions($c)) {
+        throw new \UnexpectedValueException(
+          "Array does not contain only Champion objects"
+        );
+      }
+    }
+
+    return $champs;
   }
 
-  
+  protected function containsOnlyChampions(array $champs) : bool {
+    foreach ($champs as $champ) {
+      if (!($champ instanceof Champion)) { return false; }
+    }
+
+    return true;
+  }
+
   abstract protected function refreshChampions(array $elos = []) : array;
 
   /**

@@ -34,6 +34,9 @@ class OpGG extends ChampionsDataSource
   private const MAP_ID = 1;
   private const QUEUE  = 'ranked';
 
+  // Where to get patch data
+  protected const PATCH_URI_PATTERN = "https://ddragon.leagueoflegends.com/realms/%s.json";
+
   /** @var string[] $regions */
   private $regions = ['na', 'euw', 'www'];
 
@@ -41,12 +44,16 @@ class OpGG extends ChampionsDataSource
    * Allows you to select a list of regions to grab data from. By default it
    * will just return data for NA, EUW, and KR.
    *
-   * @throws \UnexpectedValueException for any invalid region string.
-   * @param ApiClient $client
+   * @throws \UnexpectedValueException for any invalid region string in $regions
+   * @param GoodBans\ApiClient $client
+   * @param RiotAPI\RiotAPI $riot
    * @param string[] ...$regions
    */
-  public function __construct(ApiClient $client = null, RiotAPI $riot, string ...$regions) {    
-    parent::__construct($client, $riot);
+  public function __construct(
+    ApiClient $client = null, 
+    string ...$regions
+  ) {    
+    parent::__construct($client);
 
     if (!empty($regions)) {
       if (!isValid(self::REGION_SUBDOMAINS, $regions)) { 
@@ -101,14 +108,16 @@ class OpGG extends ChampionsDataSource
       }
     }
 
+    $patch = $this->getPatch();
     $champ_objects = [];
     foreach ($champs_by_elo as $elo => $champs) {
       foreach ($champs as $name => $data) {
-        $champ_objects[$elo] = new Champion(array_merge(
+        $champ_objects[$elo][] = new Champion(array_merge(
           [
-            'name' => $name, 
-            'elo' => $elo,
-            // TODO: RiotAPI for champ id
+            'name'      => $name, 
+            'elo'       => $elo,
+            'playRate'  => $data['pickRate'],
+            'patch'     => $patch,
           ], 
           $data
         ));
@@ -116,6 +125,32 @@ class OpGG extends ChampionsDataSource
     }
 
     return $champ_objects;
+  }
+
+  public function getPatch() : string {
+    if ($this->patch) { return $this->patch; }
+
+    $patches = [];
+    foreach ($this->regions as $region) {
+      if ($region === 'www') { $region = 'kr'; }
+      $url  = sprintf(static::PATCH_URI_PATTERN, $region);
+      $json = $this->client->get($url);
+      $data = json_decode($json, true);
+      if (json_last_error() === JSON_ERROR_NONE) {
+        $patches[] = $data['v'];
+      }
+      else {
+        throw new \UnexpectedValueException("Failed to get JSON from $url");
+      }
+    }
+
+    if (count(array_unique($patches)) === 1) {
+      preg_match('/^\d+?\.\d+/', $patches[0], $matches);
+      if (isset($matches[0])) { return $matches[0]; }
+      throw new \UnexpectedValueException("Failed to regex patch number.");
+    }
+
+    throw new \UnexpectedValueException("0 or more than 1 patch found.");
   }
 
   private function getStats(
@@ -202,21 +237,5 @@ class OpGG extends ChampionsDataSource
     }
 
     return $data;
-  }
-
-  // private function getFromXpath(\DOMXPath $x, string $xpath, \DOMNode $ctx = null) {
-  //   $nodes = $x->query($xpath, $ctx);
-  //   $result = null;
-  //   if ($nodes->count()) { $result = }
-  // }
-
-  /**
-   * Returns the patch this data source has.
-   *
-   * @return string
-   */
-  public function getPatch() : string {
-    // TODO:
-    return 'not implemented.';
   }
 }

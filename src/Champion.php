@@ -34,7 +34,7 @@ class Champion
 	private $adjustedPickRate = null;
 
 	public function __construct(array $champion) {
-		$this->id       = (string) $champion['championId'];
+		// $this->id       = (string) $champion['championId'];
 
 		// TODO: throw exception if these aren't normalized to 0.0 - 1.0 scale
 		$this->winRate  = (float) $champion['winRate'];
@@ -43,7 +43,7 @@ class Champion
 
 		$this->elo      = $champion['elo'];
 		$this->patch    = $champion['patch'];
-		$this->name     = $champion['name'] ?? null;
+		$this->name     = $champion['name'];
 	}
 
 	public function getId() : string {
