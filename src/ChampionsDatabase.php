@@ -6,6 +6,7 @@ use GoodBans\ChampionsDataSource;
 use GoodBans\RiotChampions;
 use GoodBans\Champion;
 use GoodBans\Logger;
+use GoodBans\TopBans;
 use Psr\Log\LogLevel;
 
 
@@ -124,7 +125,7 @@ class ChampionsDatabase
 	 * @param integer $limit How many bans to get.
 	 * @return array
 	 */
-	public function topBans(string $elo = null, $limit = 5) : array {
+	public function topBans(string $elo = null, $limit = 5) : TopBans {
 		$elos = $this->champion_data->getElos();
 
 		// optionally filter by one elo
@@ -148,7 +149,7 @@ class ChampionsDatabase
 			$top_bans[$elo] = $statement->fetchAll(\PDO::FETCH_ASSOC);
 		}
 
-		return $top_bans;
+		return new TopBans($top_bans, $this->getPatch());
 	}
 
 	public function getPatch() : string {
