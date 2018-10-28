@@ -49,7 +49,6 @@ final class ChampionsDatabaseTest extends TestCase
 			new Logger(fopen('php://memory', 'w'))
 		);
 
-		$db->initializeTable();
 		$db->refresh();
 
 		$db->topBans();
@@ -69,7 +68,6 @@ final class ChampionsDatabaseTest extends TestCase
 			new Logger(fopen('php://memory', 'w'))
 		);
 
-		$db->initializeTable();
 		$db->refresh();
 
 		$champs = $db->getAllChampions();

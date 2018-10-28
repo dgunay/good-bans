@@ -45,7 +45,7 @@ class ChampionsDatabase
 		}
 	}
 
-	public function initializeTable() {
+	public function initializeTables() {
 		$this->logger->log(LogLevel::INFO, 'Creating tables if they do not exist...' . PHP_EOL);
 		foreach ($this->champion_data->getElos() as $elo) {
 			$this->db->query(
@@ -72,7 +72,7 @@ class ChampionsDatabase
 		$name_map = array_flip($champ_names);
 
 		// Make the table if it doesn't exist
-		$this->initializeTable();
+		$this->initializeTables();
 
 		// flush champs in the database
 		$this->logger->log(LogLevel::INFO, 'Clearing database...' . PHP_EOL);

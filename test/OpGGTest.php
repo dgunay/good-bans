@@ -49,4 +49,24 @@ final class OpGGTest extends TestCase
 		}
 		return $params;
 	}
+
+	/** @dataProvider champProvider */
+	public function testPickPercentage(string $champ_name, float $percentage) {
+		$champs_by_elo = $this->gg->getChampions();
+		
+		foreach ($champs_by_elo as $elo => $champs) {
+			foreach ($champs as $ch) {
+				if ($ch->getName() === 'Miss Fortune') {
+					$this->assertEquals($percentage, $ch->getPlayRate());
+					return;
+				}
+			}
+		}
+	}
+
+	public function champProvider() {
+		return [
+			['Miss Fortune', 0.1462],
+		];
+	}
 }

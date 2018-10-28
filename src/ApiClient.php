@@ -45,6 +45,7 @@ class ApiClient
    * @return string
    */
   public function post(string $endpoint, string $body = '') : string {
+    echo "Sending POST to $endpoint with body $body\n";
     $response = @$this->client->request('POST', $endpoint, ['body' => $body]);
     $body = $response->getBody();
     return (string) $body; // must cast to string for testing

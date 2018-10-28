@@ -60,7 +60,7 @@ class OpGG extends ChampionsDataSource
     parent::__construct($client);
 
     if (!empty($regions)) {
-      if (!isValid(self::REGION_SUBDOMAINS, $regions)) { 
+      if (!$this->isValid(self::REGION_SUBDOMAINS, ...$regions)) { 
         throw new \UnexpectedValueException(
           "Array of region subdomains contains a value not in OpGG::REGION_SUBDOMAINS."
         ); 
