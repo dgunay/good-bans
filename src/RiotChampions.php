@@ -13,7 +13,7 @@ class RiotChampions
 	protected $versions = [];
 
 	/** @var string $cached_version */
-	protected $cached_version = '';
+	protected $cached_version = null;
 
 	// TODO: add checks for cache state
 	/** @var array $cached_champs */

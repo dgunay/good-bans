@@ -115,34 +115,23 @@ class OpGG extends ChampionsDataSource
         // TODO: this is an assumption - that banrates will exist for everything
         foreach ($separate_stats['banrates'] as $name => $etc) {
           if (!array_key_exists($name, $separate_stats[$key_of_lowest_count])) {
-            foreach ($separate_stats as $key => $stats)
-            unset($separate_stats[$key][$name]);
+            // remove the missing champ from the rest of the stats
+            foreach ($separate_stats as $key => $stats) {
+              unset($separate_stats[$key][$name]);
+            }
           }
         }
       }
-
-
-      // remove the missing champ from the rest of the stats
-
-
-      // Check they all have the same number of data points
-      // TODO: sometimes challenger actually doesn't have all the champs
-      // $counts = [count($winrates), count($banrates), count($pickrates)];
-      // print_r($counts);
-      // print_r(array_unique($counts));
-      // if (count(array_unique($counts)) !== 1) {
-      //   throw new \UnexpectedValueException("Counts not equal for elo $elo");
-      // }
 
       foreach ($separate_stats['winrates'] as $name => $wr) {
         $champs_by_elo[$elo][$name]['winRate'] = $wr;
       }
       foreach ($separate_stats['banrates'] as $name => $br) {
-        if (!isset($champs_by_elo[$elo][$name]['winRate'])) { break; }
+        // if (!isset($champs_by_elo[$elo][$name]['winRate'])) { break; }
         $champs_by_elo[$elo][$name]['banRate'] = $br;
       }
       foreach ($separate_stats['pickrates'] as $name => $pr) {
-        if (!isset($champs_by_elo[$elo][$name])) { break; }
+        // if (!isset($champs_by_elo[$elo][$name])) { break; }
         $champs_by_elo[$elo][$name]['pickRate'] = $pr;
       }
     }
@@ -151,8 +140,9 @@ class OpGG extends ChampionsDataSource
     $champ_objects = [];
     foreach ($champs_by_elo as $elo => $champs) {
       foreach ($champs as $name => $data) {
-        // echo $name;
-        // print_r($data);
+        $data['winRate']  = rtrim($data['winRate'], ' %') / 100;
+        $data['pickRate'] = rtrim($data['pickRate'], ' %') / 100;
+        $data['banRate']  = rtrim($data['banRate'], ' %') / 100;
         $champ_objects[$elo][] = new Champion(array_merge(
           [
             'name'      => $name, 

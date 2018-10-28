@@ -64,8 +64,11 @@ class Lolalytics extends ChampionsDataSource
 
       // Map it into an array of Champion
       $champions[$elo] = array_map(function(array $info) use ($elo) {
-        $info['elo']   = $elo;
-        $info['patch'] = $this->getPatch();
+        $info['elo']      = $elo;
+        $info['patch']    = $this->getPatch();
+        $info['winRate']  /= 100;
+        $info['banRate']  /= 100;
+        $info['playRate'] /= 100;
         return new Champion($info);
       }, $champions[$elo]);
     }
