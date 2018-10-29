@@ -24,6 +24,9 @@ class ChampionsDatabase
 	/** @var Logger */
 	protected $logger;
 
+	/** @var string $patch */
+	protected $patch;
+
 	public function __construct(
 		\PDO $pdo, 
 		ChampionsDataSource $champion_data,
@@ -153,6 +156,16 @@ class ChampionsDatabase
 	}
 
 	public function getPatch() : string {
-		return $this->champion_data->getPatch();
+		if ($this->patch) { return $this->patch; }
+
+		// FIXME: assumes that champions_silver is always populated and the first
+		// result is the correct patch.
+		return $this->db->query(
+			"SELECT   `patch`
+			 FROM     `champions_silver`;
+			 GROUP BY `patch`
+			 ORDER BY COUNT(*) DESC
+			 LIMIT    1"
+		)->fetchAll()[0]['patch'];
 	}
 }

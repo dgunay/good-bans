@@ -7,8 +7,8 @@ use GoodBans\Test\Mock\OpGG;
 use GoodBans\Test\Mock\Lolalytics;
 use GoodBans\Test\Mock\RiotChampions;
 use GoodBans\Logger;
-use PHPUnit\Framework\TestCase;
 use GoodBans\ChampionsDataSource;
+use PHPUnit\Framework\TestCase;
 
 final class ChampionsDatabaseTest extends TestCase
 {
@@ -80,5 +80,46 @@ final class ChampionsDatabaseTest extends TestCase
 			[new OpGG],
 			[new Lolalytics()],
 		];
+	}
+
+	/** @dataProvider dataSourceProvider */
+	public function testGetPatch(ChampionsDataSource $src) {
+		$db = new ChampionsDatabase(
+			new \PDO('sqlite::memory:'),
+			$src,
+			new RiotChampions(),
+			new Logger(fopen('php://memory', 'w'))
+		);
+
+		$db->refresh();
+
+		$this->assertEquals('8.21', $db->getPatch());
+	}
+
+	public function testLolalyticsWithoutScrape() {
+		$pdo = new \PDO('sqlite::memory:');
+		$db = new ChampionsDatabase(
+			$pdo,
+			new Lolalytics(),
+			new RiotChampions(),
+			new Logger(fopen('php://memory', 'w'))
+		);
+
+		// alter $pdo's state
+		$db->refresh();
+
+		unset($db);
+
+		// make a new database
+		$db = new ChampionsDatabase(
+			$pdo,
+			new Lolalytics(),
+			new RiotChampions(),
+			new Logger(fopen('php://memory', 'w'))
+		);		
+
+		$db->topBans();
+
+		$this->assertTrue(true);
 	}
 }
