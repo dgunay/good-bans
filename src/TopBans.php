@@ -2,6 +2,9 @@
 
 namespace GoodBans;
 
+/**
+ * Gets the top bans.
+ */
 class TopBans
 {
 	protected $champs_by_elo = [];
@@ -13,6 +16,7 @@ class TopBans
 		$this->patch = $patch;
 	}
 
+	// TODO: is this entire class useless? why bother with it?
 	public function getTopBans() : array {
 		return $this->champs_by_elo;
 	}

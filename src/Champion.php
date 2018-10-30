@@ -7,11 +7,15 @@ use Prophecy\Argument\Token\ExactValueToken;
 
 
 // TODO: can I make this work with JSON encode?
-// TODO: should it extend RiotAPI\Objects\StaticData\StaticChampionDto?
+
+/**
+ * Represents a Champion and can calculate the value of banning them in champ
+ * select as a function of pickrate and winrate. 
+ */
 class Champion
 {
 	/** @var string */
-	private $id;
+	private $championId;
 
 	/** @var float */
 	private $winRate;
@@ -37,8 +41,15 @@ class Champion
 	/** @var float */
 	private $adjustedPickRate = null;
 
+	/** @var REQUIRED Required keys in the array passed to the constructor.  */
 	protected const REQUIRED = [ 'winRate', 'playRate', 'banRate', 'elo', 'patch', 'name' ];
 
+	/**
+	 * Pass an associative array to construct the Champion. Required keys are in
+	 * Champion::REQUIRED.
+	 *
+	 * @param array $champion
+	 */
 	public function __construct(array $champion) {
 		foreach (self::REQUIRED as $field) {
 			if (!array_key_exists($field, $champion)) {
@@ -46,7 +57,7 @@ class Champion
 			}
 		}
 
-		$this->id = (string) isset($champion['championId']) ? $champion['championId'] : null;
+		$this->championId = (string) isset($champion['championId']) ? $champion['championId'] : null;
 
 		// TODO: throw exception if these aren't normalized to 0.0 - 1.0 scale
 		$floats = ['winRate', 'playRate', 'banRate'];
@@ -58,14 +69,17 @@ class Champion
 			$this->$float_field = (float) $champion[$float_field];
 		}
 
-		$this->elo      = $champion['elo'];
-		$this->patch    = $champion['patch'];
+		$this->elo      = (string) $champion['elo'];
+		$this->patch    = (string) $champion['patch'];
 
 		$this->name = Champion::fixName($champion['name']);
 	}
 
 	/**
-	 * Replaces names like AurelionSol with Aurelion Sol.
+	 * Replaces names like AurelionSol with Aurelion Sol. First a lookup table is
+	 * checked for common cases (especially void champions). If there are no hits, 
+	 * it spaces the words out where the capital letters are. If that can't be
+	 * done, it just returns the 
 	 *
 	 * @param string $name
 	 * @return string
@@ -96,34 +110,17 @@ class Champion
 			return str_replace($match[0], "{$match[0][0]} {$match[0][1]}", $name);
 		}
 
-		// throw new \Exception("Failed to fix '$name'");
 		return $name;
 	}
 
-	public function getId() {
-		return $this->id;
-	}
+	public function getChampionId() : ?string { return $this->championId; }
+	public function getWinRate()    : float   { return $this->winRate;    }
+	public function getPlayRate()   : float   { return $this->playRate;   }
+	public function getName()       : string  { return $this->name;       }
+	public function getElo()        : string  { return $this->elo;        }
+	public function getPatch()      : string  { return $this->patch;      }
+	public function getBanRate()    : float   { return $this->banRate;    }
 
-	public function getWinRate() : float {
-		return $this->winRate;
-	}
-
-	public function getPlayRate() : float {
-		return $this->playRate;
-	}
-
-	public function getName() : string {
-		return $this->name;
-	}
-
-	public function getElo() : string {
-		return $this->elo;
-	}
-
-	public function getPatch() : string {
-		return $this->patch;
-	}
-	
 	/**
 	 * Calculates champion ban value as a ratio of winrate to adjusted pick rate.
 	 * Cached after the first call for the lifetime of the Champion.
@@ -148,14 +145,6 @@ class Champion
 			return $this->adjustedPickRate;
 		}
 
-		// TODO: should it be 1.0 or 100?
-		// echo $this->name . PHP_EOL;
-		// echo $this->elo . PHP_EOL;
-		// echo $this->banRate . PHP_EOL;
 		return (1.0 * $this->playRate) / (1.0 - $this->banRate);
-	}
-
-	public function getBanRate() : float {
-		return $this->banRate;
 	}
 }

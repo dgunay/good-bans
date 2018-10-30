@@ -28,6 +28,14 @@ class ApiClient
     return $this->credentials;
   }
 
+  /**
+   * Sends a GET request. $args (associative) will be passed as url query 
+   * parameters.
+   *
+   * @param string $endpoint
+   * @param array $args
+   * @return string
+   */
   public function get(string $endpoint, array $args = []) : string {
     $response = @$this->client->request('GET', $endpoint, ['query' => $args]);
     $body = $response->getBody();

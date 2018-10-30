@@ -98,11 +98,10 @@ class ChampionsDatabase
 				)");
 				
 				$statement->execute([
-					':id'               => $champion->getId() ?? $name_map[$champion->getName()],
+					':id'               => $champion->getChampionId() ?? $name_map[$champion->getName()],
 					':winRate'          => $champion->getWinRate(),
 					':playRate'         => $champion->getPlayRate(),
 					':name'             => $champion->getName(),
-					// ':elo'              => $champion->getElo(),
 					':adjustedPickRate' => $champion->adjustedPickRate(),
 					':banRate'          => $champion->getBanRate(),
 					':banValue'         => $champion->banValue(),
