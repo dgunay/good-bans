@@ -77,70 +77,6 @@ class Lolalytics extends ChampionsDataSource
     return $champions;
   }
 
-  private function parseDom(string $html) : array {
-    if ($this->patch === null) {
-      preg_match('/Patch (\d+\.\d+)/', $html, $match);
-      if (isset($match[1])) {
-        $this->patch = $match[1];
-      }
-      else {
-        throw new \Exception("Failed to regex patch number.");
-      }
-    }
-
-    unset($match);
-    preg_match('/var stats = ({.+?});/', $html, $match);
-    if (isset($match[1])) {
-      $champ_data = $this->parseJson($match[1]);
-    }
-    else {
-      throw new \Exception("Failed to regex patch number.");
-    }
-
-    $dom = new \DOMDocument();
-    @$dom->loadHTML($html);
-    $xpath = new \DOMXPath($dom);
-
-    $champions = [];
-
-    $rows = $xpath->query("//div[@class='table']/div[contains(@class,'row filter')]");
-    if ($rows->count()) {
-      foreach ($rows as $row) {
-        $champion = array(
-          // 'id'       => null,
-          'name'     => null,
-          'winRate'  => null,
-          'playRate' => null,
-          'banRate'  => null,
-        );
-        
-        $xpaths = [
-          'championId' => "td[1]/div/@data-id",
-          'name'       => "td[2]/div[@class='All']",
-          'winRate'    => "td[5]/div[@class='All']",
-          'playRate'   => "td[6]/div[@class='All']",
-          'banRate'    => "td[7]/div[@class='All']",
-        ];
-        foreach ($xpaths as $field => $xpath) {
-          $nodelist = $xpath->query($xpath, $row);
-          if ($nodelist->length > 0) {
-            $champion[$field] = $nodelist->item(0)->nodeValue;
-          }
-          else {
-            throw new \Exception("Failed to xpath '$field' using query '$xpath'.");
-          }
-        }
-  
-        $champions[$champion['name']] = $champion;
-      }
-    }
-    else {
-      throw new \Exception("Failed to xpath rows.");
-    }
-
-    return $champions;
-  }
-
   protected function parseJson(string $json) : array {
     $data = json_decode($json, true);
 
@@ -216,6 +152,13 @@ class Lolalytics extends ChampionsDataSource
     return $ret;
   }
 
+  /**
+   * Gets the stored patch. Note that this will not work unless scrape() has
+   * been called once on this object.
+   *
+   * @throws \RuntimeException if called before scrape().
+   * @return string
+   */
   public function getPatch() : string { 
     if ($this->patch !== null) { return $this->patch; }
 

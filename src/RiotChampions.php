@@ -9,7 +9,7 @@ namespace GoodBans;
  */
 class RiotChampions
 {
-	/** @var array $versions */
+	/** @var string[] $versions */
 	protected $versions = [];
 
 	/** @var string $cached_version */
@@ -19,15 +19,15 @@ class RiotChampions
 	/** @var array $cached_champs */
 	protected $cached_champs = [];
 
-	// Points to a JSON array of valid DataDragon versions
+	/** @var string VERSIONS_URI Points to a JSON array of valid DataDragon versions */
 	const VERSIONS_URI = 'https://ddragon.leagueoflegends.com/api/versions.json';
 
-	// Used to sprintf in the version when retrieving the file
+	/** 
+	 * @var string FILE_URI_PATTERN Used to sprintf in the version when retrieving 
+	 * the file for easier mocking of requests. 
+	 */
 	const FILE_URI_PATTERN = 'http://ddragon.leagueoflegends.com/cdn/%s/data/en_US/champion.json';
 
-	/**
-	 * @param string $patch DataDragon version number.
-	 */
 	public function __construct() {
 		$versions = \json_decode(\file_get_contents(self::VERSIONS_URI), true);
 
@@ -40,7 +40,7 @@ class RiotChampions
 	}
 
 	/**
-	 * @throws \DomainException DataDragon 
+	 * @throws \DomainException For invalid DataDragon version number 
 	 * @param string $version
 	 * @return array
 	 */
@@ -60,14 +60,15 @@ class RiotChampions
 			throw new \RuntimeException(\error_get_last()['message']);
 		}
 
-		$this->cached_champs = \json_decode($response, true)['data'];
+		$this->cached_champs  = \json_decode($response, true)['data'];
 		$this->cached_version = $version;
 		return $this->cached_champs;
 	}
 
 	/**
 	 * Returns a mapping of ['champion key' => 'name']
-	 *
+	 * 
+	 * @param string $version A valid DataDragon version.
 	 * @return array
 	 */
 	public function getChampNameMap(string $version = '') : array {
@@ -86,12 +87,14 @@ class RiotChampions
 	}
 
 	/**
-	 * Returns a mapping of ['champion key' => 'icon URL'].
+	 * Returns a mapping of ['champion key' => 'icon URL'] using the currently
+	 * cached champions.
 	 *
 	 * @return array
 	 */
 	public function getImageUrls() : array {
 		$urls = [];
+		// FIXME: call getChampions() if not cached.
 		foreach ($this->cached_champs as $champion) {
 			$urls[$champion['key']] = "http://ddragon.leagueoflegends.com/cdn/{$this->cached_version}/img/champion/{$champion['image']['full']}";
 		}

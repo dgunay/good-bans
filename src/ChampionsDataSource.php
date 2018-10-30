@@ -23,10 +23,10 @@ abstract class ChampionsDataSource
   protected $client;
 
   /**
-   * TODO: document
+   * Constructs the object. If you don't provide an ApiClient, one will be
+   * default constructed for you.
    *
    * @param ApiClient $client
-   * @param RiotAPI $riot
    */
   public function __construct(ApiClient $client = null) {
     $this->client = $client ?? new ApiClient();
@@ -49,7 +49,6 @@ abstract class ChampionsDataSource
    * @return array should be ['bronze' => [...], 'silver' => [...], ...]
    */
   public function getChampions(array $elos = [], bool $refresh = false) : array {
-    // TODO: the filtering might need to be standardized on refreshChampions()
     if ($this->champions && !$refresh) {
       return array_intersect_key($this->champions, array_flip($elos));
     }
@@ -74,6 +73,13 @@ abstract class ChampionsDataSource
     return true;
   }
 
+  /**
+   * Refreshes the collection of ['elo' => Champion[]]. This is where
+   * provider-specific logic should begin (and so this method is left abstract).
+   *
+   * @param array $elos
+   * @return array ['elo' => Champion[], ...]
+   */
   abstract protected function refreshChampions(array $elos = []) : array;
 
   /**

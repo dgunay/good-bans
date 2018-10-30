@@ -7,39 +7,46 @@ use GoodBans\ApiClient;
 use RiotAPI\RiotAPI;
 
 /**
- * TODO: implement requesting by (if possible):
- *  - Elo
- *  - Time period
- *  - Map
- *  - Queue type
- * 
- * TODO: prefix URL with region
+ * Gets data from http://op.gg. It can aggregate across different regions.
+ * Only gets SR ranked data. 
  */
 class OpGG extends ChampionsDataSource
 {
-  // www is korea
+  // TODO: replace with enum constants
+  /** @var string[] REGION_SUBDOMAINS Valid region subdomains. 'www' is Korea. */
   private const REGION_SUBDOMAINS = [ 'na', 'www', 'jp', 'euw', 'eune', 'oce',
                                       'br', 'las', 'lan', 'ru', 'tr', 'sg', 'id',
                                       'ph', 'tw', 'vn', 'th', ];
-                                      
+  
+  /** @var string[] GRAPH_TYPES Gettable stats (win/loss rate, pick/ban rate) */
   private const GRAPH_TYPES = [ 'win', 'lose', 'picked', 'banned' ];
 
+  // TODO: make these selectable
+  /** @var string[] PERIODS Date ranges for data to access */
   private const PERIODS = [ 'month', 'week', 'today' ];
 
-  // '' is all leagues
+  /** @var string[] LEAGUES Ranked leagues with accessible data. '' is all leagues. */
   private const LEAGUES = [ '', 'bronze', 'silver', 'gold', 'platinum',
                             'diamond', 'master', 'challenger' ];
 
-  // We only care about ranked Summoner's Rift.
+  /** @var int MAP_ID 1 = SR. We only care about Summoner's Rift stats.*/ 
   private const MAP_ID = 1;
+
+  /** @var string QUEUE We only care about ranked stats. */
   private const QUEUE  = 'ranked';
 
-  // Where to get patch data
+  /** @var string printf() pattern to enable easy mocking of getting data. */
   protected const PATCH_URI_PATTERN = "https://ddragon.leagueoflegends.com/realms/%s.json";
 
-  /** @var string[] $regions */
+  /** @var string[] $regions Currently selected regions. Default is na/euw/www */
   private $regions = ['na', 'euw', 'www'];
 
+  /**
+   * Gets all elos/leagues offered by op.gg (except for all, which is a blank
+   * string).
+   *
+   * @return string[]
+   */
   public function getElos(): array {
     return array_filter(self::LEAGUES);
   }
@@ -48,10 +55,9 @@ class OpGG extends ChampionsDataSource
    * Allows you to select a list of regions to grab data from. By default it
    * will just return data for NA, EUW, and KR.
    *
-   * @throws \UnexpectedValueException for any invalid region string in $regions
    * @param GoodBans\ApiClient $client
-   * @param RiotAPI\RiotAPI $riot
    * @param string[] ...$regions
+   * @throws \UnexpectedValueException for any invalid region string in $regions
    */
   public function __construct(
     ApiClient $client = null, 
@@ -71,10 +77,10 @@ class OpGG extends ChampionsDataSource
   }
 
   /**
-   * Validates that all of the values are in $valids
+   * Validates that all of the values are in $valids. 
    *
    * @param array $valids
-   * @param mixed ...$values
+   * @param array,... ...$values
    * @return boolean
    */
   private function isValid(array $valids, ...$values) : bool {
@@ -87,6 +93,17 @@ class OpGG extends ChampionsDataSource
     return true;
   }
 
+  /**
+   * Refreshes champion win/ban/pickrate data from http://op.gg. 
+   * 
+   * It will aggregate stats across every region that the OpGG was constructed 
+   * with. Champions that don't have all 3 of win/ban/pick rate data will be excluded
+   * entirely (happens sometimes in challenger with low sample sizes). 
+   *
+   * @param array $elos Array of elos/leagues to get data for. By default it
+   * will get all of them.
+   * @return array ['elo' => Champion[], ...]
+   */
   protected function refreshChampions(array $elos = []) : array {
     $data = [];
     if (empty($elos)) { $elos = $this->getElos(); }
@@ -127,11 +144,9 @@ class OpGG extends ChampionsDataSource
         $champs_by_elo[$elo][$name]['winRate'] = $wr;
       }
       foreach ($separate_stats['banrates'] as $name => $br) {
-        // if (!isset($champs_by_elo[$elo][$name]['winRate'])) { break; }
         $champs_by_elo[$elo][$name]['banRate'] = $br;
       }
       foreach ($separate_stats['pickrates'] as $name => $pr) {
-        // if (!isset($champs_by_elo[$elo][$name])) { break; }
         $champs_by_elo[$elo][$name]['pickRate'] = $pr;
       }
     }
@@ -140,9 +155,9 @@ class OpGG extends ChampionsDataSource
     $champ_objects = [];
     foreach ($champs_by_elo as $elo => $champs) {
       foreach ($champs as $name => $data) {
-        $data['winRate']  = rtrim($data['winRate'], ' %') / 100;
+        $data['winRate']  = rtrim($data['winRate'],  ' %') / 100;
         $data['pickRate'] = rtrim($data['pickRate'], ' %') / 100;
-        $data['banRate']  = rtrim($data['banRate'], ' %') / 100;
+        $data['banRate']  = rtrim($data['banRate'],  ' %') / 100;
         $champ_objects[$elo][] = new Champion(array_merge(
           [
             'name'      => $name, 
@@ -158,6 +173,15 @@ class OpGG extends ChampionsDataSource
     return $champ_objects;
   }
 
+  /**
+   * Requests the most recent patch from the Riot DataDragon API since op.gg
+   * doesn't really do patch numbers, just  
+   *
+   * @throws \UnexpectedValueException For failing to parse JSON (unlikely)
+   * @throws \UnexpectedValueException For failing to regex the patch number
+   * @throws \UnexpectedValueException For finding 0 or 2+ patch numbers.
+   * @return string
+   */
   public function getPatch() : string {
     if ($this->patch) { return $this->patch; }
 
@@ -184,6 +208,14 @@ class OpGG extends ChampionsDataSource
     throw new \UnexpectedValueException("0 or more than 1 patch found.");
   }
 
+  /**
+   * Gets the type of stat from the op.gg 'API' (their exposed table endpoint).
+   *
+   * @param string $type Valid values in OpGG::GRAPH_TYPES.
+   * @param string $league Valid vlaues in OpGG::LEAGUES.
+   * @param string $period Defaults to 'month'.
+   * @return array
+   */
   protected function getStats(
     string $type = 'win', 
     string $league = '', 
@@ -230,6 +262,15 @@ class OpGG extends ChampionsDataSource
     return $aggregate_stats;
   }
 
+  /**
+   * Parses the HTML table from op.gg's exposed data endpoint into a map
+   * of champion name => stat, whatever stat may be.
+   *
+   * @throws \UnexpectedValueException If no value found for name or stat.
+   * @throws \Exception If no rows found.
+   * @param string $html
+   * @return array
+   */
   private function parseAjaxResponse(string $html) : array {
     $dom = new \DOMDocument();
     @$dom->loadHTML($html);

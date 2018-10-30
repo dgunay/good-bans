@@ -5,11 +5,17 @@ namespace GoodBans;
 use GoodBans\RiotChampions;
 use GoodBans\TopBans;
 
+/**
+ * Generates a simple HTML view of the top bans with champion pictures.
+ */
 class View
 {
 	/** @var GoodBans\TopBans $bans */
 	protected $bans;
 
+	/**
+	 * @param TopBans $bans
+	 */
 	public function __construct(TopBans $bans) {
 		$this->bans = $bans;	
 	}
